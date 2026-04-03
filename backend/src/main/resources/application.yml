@@ -66,6 +66,13 @@ jwt:
   secret: ${JWT_SECRET:dev-secret-key-change-in-production-must-be-at-least-256-bits-long}
   expiration-hours: ${JWT_EXPIRATION_HOURS:8}
 
+# --- CORS ---
+# Orígenes permitidos separados por coma.
+# En producción, setear la variable de entorno ALLOWED_ORIGINS con el dominio del frontend.
+# Ejemplo: ALLOWED_ORIGINS=https://mi-frontend.onrender.com
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8081}
+
 # --- Logging ---
 logging:
   level:

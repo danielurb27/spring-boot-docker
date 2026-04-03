@@ -1,5 +1,6 @@
 package com.easy.offers.auth.infrastructure;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * SecurityConfig — Configuración central de Spring Security.
@@ -42,6 +48,15 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
+    /**
+     * Orígenes permitidos para CORS.
+     * Se configura via variable de entorno ALLOWED_ORIGINS para flexibilidad.
+     * Ejemplo: "https://mi-frontend.onrender.com,http://localhost:4200"
+     * Si no se define, permite localhost para desarrollo local.
+     */
+    @Value("${cors.allowed-origins:http://localhost:4200,http://localhost:8081}")
+    private String allowedOriginsStr;
+
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -69,6 +84,9 @@ public class SecurityConfig {
                 // (a diferencia de las cookies), por lo que CSRF no aplica.
                 // ─────────────────────────────────────────────────────────────
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // CORS: usar la configuración definida en corsConfigurationSource()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // ─────────────────────────────────────────────────────────────
                 // 2. Configuración STATELESS (sin sesiones HTTP)
@@ -131,19 +149,31 @@ public class SecurityConfig {
     }
 
     /**
+     * Configuración de CORS.
+     * Permite requests desde los orígenes definidos en ALLOWED_ORIGINS.
+     * Para producción en Render, configurar la variable de entorno:
+     * ALLOWED_ORIGINS=https://tu-frontend.onrender.com
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // Parsear los orígenes separados por coma
+        List<String> origins = List.of(allowedOriginsStr.split(","));
+        config.setAllowedOrigins(origins);
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        // Necesario para enviar el header Authorization con el JWT
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    /**
      * Bean de BCryptPasswordEncoder para hashear contraseñas.
-     *
-     * ¿Por qué BCrypt?
-     * - Incluye un salt aleatorio automáticamente (evita ataques de rainbow table)
-     * - El factor de costo (strength) controla cuántas iteraciones se hacen
-     * - Factor 10 = 2^10 = 1024 iteraciones: balance entre seguridad y velocidad
-     * - Cada hash tarda ~100ms en generarse, lo que hace inviable la fuerza bruta
-     *
-     * ¿Por qué definirlo como @Bean?
-     * Al ser un bean de Spring, puede inyectarse en cualquier servicio que
-     * necesite hashear o verificar contraseñas (AuthService, UserService).
-     * Evita crear instancias múltiples del encoder.
-     *
      * Requerimiento: 1.5 — BCrypt con factor de costo mínimo 10.
      */
     @Bean
