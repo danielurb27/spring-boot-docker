@@ -12,6 +12,6 @@
  * pero el frontend accede al backend a través del proxy de Nginx.
  */
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api'
+  production: true,
+  apiUrl: 'https://spring-boot-docker-1-ooxb.onrender.com/'
 };

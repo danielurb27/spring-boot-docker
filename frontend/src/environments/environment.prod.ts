@@ -8,6 +8,6 @@
  * Esto permite que el frontend funcione sin conocer la IP del backend.
  */
 export const environment = {
-  production: true,
+  production: false,
   apiUrl: '/api'
 };
