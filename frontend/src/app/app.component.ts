@@ -27,8 +27,8 @@ import { AuthService } from './services/auth.service';
     <!-- Mostrar navbar solo si el usuario está autenticado -->
     <nav class="navbar" *ngIf="authService.isAuthenticated()">
       <div class="navbar-brand">
-        <span class="brand-icon">🏪</span>
-        <span class="brand-name">Easy Offers</span>
+        <span class="brand-icon"></span>
+        <span class="brand-name">Eazi Offers</span>
       </div>
 
       <div class="navbar-links">
