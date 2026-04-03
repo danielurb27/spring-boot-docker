@@ -55,10 +55,7 @@ spring:
 
 # --- Servidor HTTP ---
 server:
-  port: 8080
-  error:
-    include-message: always
-    include-path: true
+  ${PORT:8080}
 
 # --- JWT ---
 # La clave secreta viene de la variable de entorno JWT_SECRET.
