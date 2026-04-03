@@ -13,32 +13,16 @@
 # STAGE 1: BUILD — Compilar Angular
 # ============================================================
 FROM node:20-alpine AS build
-
 WORKDIR /app
-
-# Copiar package.json primero para aprovechar el cache de Docker.
-# Si package.json no cambia, Docker reutiliza la capa de npm install.
 COPY package.json ./
-
-# Instalar dependencias
 RUN npm install
-
-# Copiar el resto del código fuente
 COPY . .
-
-# Compilar para producción
-# --configuration production: usa environment.prod.ts (apiUrl = '/api')
 RUN npm run build:prod
 
 # ============================================================
 # STAGE 2: RUNTIME — Servir con Nginx
 # ============================================================
 FROM nginx:alpine AS runtime
-
-# Copiar los archivos compilados al directorio de Nginx
 COPY --from=build /app/dist/easy-offers-frontend/browser /usr/share/nginx/html
-
-# Copiar la configuración personalizada de Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
