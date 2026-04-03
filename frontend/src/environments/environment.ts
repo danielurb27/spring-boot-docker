@@ -13,5 +13,5 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'https://spring-boot-docker-1-ooxb.onrender.com/'
+  apiUrl: '/api'
 };
