@@ -51,7 +51,7 @@ spring:
 
   # --- Perfil activo ---
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
 # --- Servidor HTTP ---
 server:
@@ -64,7 +64,7 @@ server:
 # La clave secreta viene de la variable de entorno JWT_SECRET.
 # Debe tener al menos 256 bits (32 bytes) para HS256.
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:dev-secret-key-change-in-production-must-be-at-least-256-bits-long}
   expiration-hours: ${JWT_EXPIRATION_HOURS:8}
 
 # --- Logging ---

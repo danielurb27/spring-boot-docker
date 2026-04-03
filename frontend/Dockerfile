@@ -23,6 +23,17 @@ RUN npm run build:prod
 # STAGE 2: RUNTIME — Servir con Nginx
 # ============================================================
 FROM nginx:alpine AS runtime
+
+# Copiar los archivos compilados de Angular
 COPY --from=build /app/dist/easy-offers-frontend/browser /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiar nginx.conf como template.
+# La imagen nginx:alpine procesa automáticamente los archivos en
+# /etc/nginx/templates/ usando envsubst, reemplazando ${PORT} con
+# el valor real de la variable de entorno que Render inyecta.
+# El resultado se copia a /etc/nginx/conf.d/default.conf al arrancar.
+COPY frontend/nginx.conf /etc/nginx/templates/default.conf.template
+
+# Render asigna el puerto via variable de entorno PORT.
+# Exponemos 80 como documentación, pero Nginx escuchará en $PORT.
 EXPOSE 80
