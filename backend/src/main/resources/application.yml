@@ -55,7 +55,9 @@ spring:
 
 # --- Servidor HTTP ---
 server:
-  ${PORT:8080}
+  port: ${PORT:8080}
+  address: 0.0.0.0
+
 
 # --- JWT ---
 # La clave secreta viene de la variable de entorno JWT_SECRET.
