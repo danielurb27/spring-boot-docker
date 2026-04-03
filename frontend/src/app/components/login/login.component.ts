@@ -35,8 +35,8 @@ import { HttpErrorResponse } from '@angular/common/http';
         <!-- Logo y título -->
         <div class="login-header">
           <div class="logo">🏪</div>
-          <h1>Easy Offers</h1>
-          <p>Gestión de Ofertas Comerciales</p>
+          <h1>Eazi</h1>
+          <p>Gestión de Ofertas</p>
         </div>
 
         <!-- Mensaje de error (visible solo si hay error) -->
