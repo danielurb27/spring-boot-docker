@@ -1,0 +1,256 @@
+### =============================================================================
+### api-testing.http — Colección de requests HTTP para probar la API.
+###
+### ¿Cómo usar este archivo?
+### Opción 1: IntelliJ IDEA / VS Code con extensión REST Client
+###   - Abre este archivo y haz clic en "Run" junto a cada request.
+###
+### Opción 2: curl desde la terminal
+###   - Copia el comando curl equivalente que aparece en los comentarios.
+###
+### Opción 3: Postman
+###   - Importa este archivo como colección (File → Import).
+###
+### Prerequisito: el backend debe estar corriendo en localhost:8080.
+### Para levantarlo: docker-compose up --build
+### O en desarrollo local: cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+### =============================================================================
+
+@baseUrl = http://localhost:8080/api
+@adminToken = {{login.response.body.token}}
+
+### ─────────────────────────────────────────────────────────────────────────────
+### CHECKPOINT 7: Verificar autenticación
+### ─────────────────────────────────────────────────────────────────────────────
+
+### 1. Login exitoso con usuario admin (debe retornar HTTP 200 + JWT)
+# curl -X POST http://localhost:8080/api/auth/login \
+#   -H "Content-Type: application/json" \
+#   -d '{"username":"admin","password":"admin123"}'
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Respuesta esperada:
+### HTTP 200 OK
+### {
+###   "token": "eyJhbGciOiJIUzI1NiJ9...",
+###   "expiresAt": "2024-07-15T18:30:00Z",
+###   "tokenType": "Bearer"
+### }
+
+###
+
+### 2. Login con credenciales inválidas (debe retornar HTTP 401)
+# curl -X POST http://localhost:8080/api/auth/login \
+#   -H "Content-Type: application/json" \
+#   -d '{"username":"admin","password":"wrongpassword"}'
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "wrongpassword"
+}
+
+### Respuesta esperada:
+### HTTP 401 Unauthorized
+### {
+###   "status": 401,
+###   "error": "Unauthorized",
+###   "message": "Credenciales inválidas. Verifique su usuario y contraseña.",
+###   "timestamp": "...",
+###   "path": "/api/auth/login"
+### }
+
+###
+
+### 3. Acceso a endpoint protegido SIN token (debe retornar HTTP 401)
+# curl http://localhost:8080/api/offers
+GET {{baseUrl}}/offers
+
+### Respuesta esperada: HTTP 401 Unauthorized
+
+###
+
+### 4. Acceso a endpoint protegido CON token válido (debe retornar HTTP 200)
+# Reemplazar TOKEN con el token obtenido en el request 1
+# curl http://localhost:8080/api/offers \
+#   -H "Authorization: Bearer TOKEN"
+GET {{baseUrl}}/offers
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 OK (lista vacía por ahora)
+
+###
+
+### 5. Acceso a endpoint de ADMIN con token de EMPLOYEE (debe retornar HTTP 403)
+### (Primero crear un usuario EMPLOYEE con el request de la sección Users)
+### DELETE {{baseUrl}}/offers/1
+### Authorization: Bearer {{employeeToken}}
+### Respuesta esperada: HTTP 403 Forbidden
+
+### ─────────────────────────────────────────────────────────────────────────────
+### SECCIÓN: Users (Tarea 8)
+### ─────────────────────────────────────────────────────────────────────────────
+
+### 6. Crear usuario EMPLOYEE (solo ADMIN puede hacer esto)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "fullName": "Juan Pérez",
+  "username": "jperez",
+  "password": "empleado123",
+  "role": "EMPLOYEE"
+}
+
+### Respuesta esperada: HTTP 201 Created
+
+###
+
+### 7. Intentar crear usuario con username duplicado (debe retornar HTTP 409)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "fullName": "Otro Juan",
+  "username": "jperez",
+  "password": "otra123",
+  "role": "EMPLOYEE"
+}
+
+### Respuesta esperada: HTTP 409 Conflict
+
+###
+
+### 8. Desactivar usuario (solo ADMIN)
+PATCH {{baseUrl}}/users/2/deactivate
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 OK
+
+###
+
+### ─────────────────────────────────────────────────────────────────────────────
+### SECCIÓN: Offers (Tarea 9) — CRUD completo
+### ─────────────────────────────────────────────────────────────────────────────
+
+### 10. Crear oferta (ADMIN o EMPLOYEE)
+POST {{baseUrl}}/offers
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Oferta de verano Ferretería",
+  "description": "Descuentos en herramientas de jardín",
+  "offerTypeId": 1,
+  "sectorId": 2,
+  "startsAt": "2026-05-01T00:00:00",
+  "endsAt": "2026-05-31T23:59:59"
+}
+
+### Respuesta esperada: HTTP 201 Created con la oferta y status calculado (PROXIMA)
+
+###
+
+### 11. Listar ofertas (sin filtros)
+GET {{baseUrl}}/offers
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con Page<OfferResponse> ordenado por startsAt DESC
+
+###
+
+### 12. Listar ofertas con filtros
+GET {{baseUrl}}/offers?sectorId=2&status=PROXIMA
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 solo con ofertas del sector 2 en estado PROXIMA
+
+###
+
+### 13. Obtener oferta por ID
+GET {{baseUrl}}/offers/1
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con la oferta, o 404 si no existe
+
+###
+
+### 14. Editar oferta
+PUT {{baseUrl}}/offers/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Oferta de verano Ferretería ACTUALIZADA",
+  "description": "Nuevos descuentos",
+  "offerTypeId": 1,
+  "sectorId": 2,
+  "startsAt": "2026-05-01T00:00:00",
+  "endsAt": "2026-06-30T23:59:59"
+}
+
+### Respuesta esperada: HTTP 200 con la oferta actualizada
+
+###
+
+### 15. Dashboard
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con conteos y listas de ofertas activas/próximas
+
+###
+
+### 16. Eliminar oferta (solo ADMIN)
+DELETE {{baseUrl}}/offers/1
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 204 No Content
+
+###
+
+### 17. Intentar eliminar con rol EMPLOYEE (debe retornar HTTP 403)
+### DELETE {{baseUrl}}/offers/1
+### Authorization: Bearer {{employeeToken}}
+### Respuesta esperada: HTTP 403 Forbidden
+
+### ─────────────────────────────────────────────────────────────────────────────
+### SECCIÓN: Audit (Tarea 11)
+### ─────────────────────────────────────────────────────────────────────────────
+
+### 18. Ver historial de auditoría de una oferta (solo ADMIN)
+GET {{baseUrl}}/offers/1/audit
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con lista de eventos ordenados por created_at DESC
+### Debería mostrar el evento CREATE y los UPDATE si editaste la oferta
+
+###
+
+### ─────────────────────────────────────────────────────────────────────────────
+### SECCIÓN: Catálogos (para poblar selectores del frontend)
+### ─────────────────────────────────────────────────────────────────────────────
+
+### 19. Obtener tipos de oferta
+GET {{baseUrl}}/catalog/offer-types
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con los 8 tipos de oferta
+
+###
+
+### 20. Obtener sectores
+GET {{baseUrl}}/catalog/sectors
+Authorization: Bearer {{adminToken}}
+
+### Respuesta esperada: HTTP 200 con los 21 sectores (incluyendo Hacks and Racks con code: null)

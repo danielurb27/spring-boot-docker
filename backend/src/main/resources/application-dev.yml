@@ -1,0 +1,45 @@
+# application-dev.yml — Configuración para el entorno de desarrollo local.
+#
+# ¿Cómo funciona el sistema de perfiles de Spring Boot?
+# Spring Boot carga primero application.yml (configuración base) y luego
+# sobreescribe/agrega propiedades con el archivo del perfil activo.
+# Si SPRING_PROFILES_ACTIVE=dev, carga application-dev.yml encima de application.yml.
+#
+# Decisión de diseño: valores concretos solo en archivos de perfil.
+# application.yml usa variables de entorno (${DB_URL}) para ser seguro en producción.
+# application-dev.yml tiene valores hardcodeados para facilitar el desarrollo local
+# sin necesidad de configurar variables de entorno manualmente.
+#
+# IMPORTANTE: Este archivo NO debe contener secretos de producción.
+# El JWT_SECRET de desarrollo es intencionalmente débil y descriptivo.
+# En producción, se usa una clave aleatoria de al menos 256 bits.
+
+spring:
+  datasource:
+    # Puerto 5434: el PostgreSQL de Docker está mapeado en este puerto.
+    # Si usás tu PostgreSQL local directamente (sin Docker), cambiá a 5432.
+    url: jdbc:postgresql://localhost:5434/easy_offers_db
+    username: easy_user
+    password: easy_password
+
+  jpa:
+    # En desarrollo, mostramos el SQL generado por Hibernate para aprender
+    # qué consultas se están ejecutando y detectar problemas de N+1.
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# JWT con valores de desarrollo — NO usar en producción
+jwt:
+  secret: dev-secret-key-change-in-production-must-be-at-least-256-bits-long
+  expiration-hours: 8
+
+# Logging más detallado en desarrollo
+logging:
+  level:
+    root: INFO
+    com.easy.offers: DEBUG
+    # Ver el SQL con parámetros reales (útil para depurar consultas)
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

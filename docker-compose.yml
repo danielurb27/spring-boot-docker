@@ -1,0 +1,144 @@
+# docker-compose.yml — Orquestación de todos los servicios de la aplicación.
+#
+# ¿Qué es Docker Compose?
+# Es una herramienta que permite definir y ejecutar aplicaciones multi-contenedor.
+# En lugar de arrancar cada contenedor manualmente con `docker run`, definimos
+# todos los servicios en este archivo y los levantamos con un solo comando:
+#   docker-compose up --build
+#
+# Decisión de diseño: tres servicios separados.
+# - postgres: base de datos (estado persistente)
+# - backend: API REST en Java (stateless, puede escalar horizontalmente)
+# - frontend: servidor web Nginx con la app Angular (archivos estáticos)
+#
+# Ver Requerimiento 11.1: el sistema debe ejecutarse en contenedores Docker.
+
+services:
+
+  # ============================================================
+  # Servicio: postgres
+  # Base de datos PostgreSQL 16 con Alpine Linux (imagen liviana).
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: easy-offers-postgres
+    # Variables de entorno que PostgreSQL usa para inicializar la BD.
+    # Estas variables se leen del archivo .env (ver .env.example).
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-easy_offers_db}
+      POSTGRES_USER: ${POSTGRES_USER:-easy_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-easy_password}
+      # Zona horaria del servidor PostgreSQL: siempre UTC.
+      # Decisión: almacenar todas las fechas en UTC y convertir en el cliente.
+      TZ: UTC
+      PGTZ: UTC
+    # Volúmenes:
+    # 1. postgres_data: volumen persistente para los datos de la BD.
+    #    Sin esto, cada `docker-compose down` borraría todos los datos.
+    # 2. ./backend/src/main/resources/db:/docker-entrypoint-initdb.d:ro
+    #    PostgreSQL ejecuta automáticamente los scripts .sql en este directorio
+    #    cuando crea el contenedor por PRIMERA VEZ (si el volumen está vacío).
+    #    Orden de ejecución: alfabético → 01_schema.sql antes que 02_data.sql.
+    #    :ro = read-only, el contenedor no puede modificar los scripts.
+    #
+    #    NOTA: Spring Boot también ejecuta estos scripts al arrancar (via sql.init).
+    #    Tener ambos mecanismos es redundante pero seguro: si el contenedor de
+    #    PostgreSQL se crea antes que el backend, los scripts ya están aplicados.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/main/resources/db:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Puerto externo 5434 para evitar conflicto con PostgreSQL local en 5432.
+      # Formato: "host:contenedor" — el contenedor sigue usando 5432 internamente.
+      # Para conectarte con DBeaver/pgAdmin desde tu máquina: localhost:5434
+      - "5434:5432"
+    # Healthcheck: Docker verifica que PostgreSQL esté listo para aceptar conexiones.
+    # El servicio backend espera a que este healthcheck pase antes de arrancar.
+    # Sin esto, el backend podría intentar conectarse antes de que la BD esté lista.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-easy_user} -d ${POSTGRES_DB:-easy_offers_db}"]
+      interval: 10s      # Verificar cada 10 segundos
+      timeout: 5s        # Esperar máximo 5 segundos por respuesta
+      retries: 5         # Reintentar 5 veces antes de marcar como unhealthy
+      start_period: 10s  # Dar 10 segundos iniciales antes de empezar a verificar
+    networks:
+      - easy-network
+
+  # ============================================================
+  # Servicio: backend
+  # API REST en Java 21 + Spring Boot.
+  # ============================================================
+  backend:
+    # build: construye la imagen desde el Dockerfile en ./backend/
+    # En lugar de usar una imagen pre-construida, Docker compila el código aquí.
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: easy-offers-backend
+    # depends_on con condition: service_healthy garantiza que el backend
+    # solo arranca DESPUÉS de que PostgreSQL esté listo (healthcheck pasado).
+    # Esto evita errores de "connection refused" al arrancar.
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # URL de conexión a PostgreSQL usando el nombre del servicio como hostname.
+      # En Docker Compose, los servicios se comunican por nombre (no por IP).
+      # "postgres" aquí es el nombre del servicio definido arriba.
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-easy_offers_db}
+      DB_USERNAME: ${POSTGRES_USER:-easy_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-easy_password}
+      # Clave secreta para firmar los JWT. En producción debe ser aleatoria y larga.
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-8}
+      # Perfil de Spring: "prod" en producción, "dev" en desarrollo
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      # Zona horaria del JVM: siempre UTC
+      TZ: UTC
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "8080:8080"
+    networks:
+      - easy-network
+    # Reiniciar automáticamente si el contenedor falla (útil en producción)
+    restart: unless-stopped
+
+  # ============================================================
+  # Servicio: frontend
+  # Nginx sirviendo la app Angular compilada + proxy al backend.
+  # ============================================================
+  frontend:
+    # Construir desde el Dockerfile del frontend (multi-stage: Node build + Nginx)
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: easy-offers-frontend
+    depends_on:
+      - backend
+    ports:
+      # Puerto 8081 para evitar conflicto con Apache/XAMPP local en el puerto 80.
+      # Acceso desde el navegador: http://localhost:8081
+      - "8081:80"
+    networks:
+      - easy-network
+    restart: unless-stopped
+
+# ============================================================
+# Volúmenes nombrados
+# Los volúmenes nombrados son gestionados por Docker y persisten
+# entre reinicios de contenedores. Son más portables que los
+# bind mounts (rutas absolutas del host).
+# ============================================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ============================================================
+# Red compartida
+# Todos los servicios están en la misma red "easy-network".
+# Esto permite que se comuniquen entre sí por nombre de servicio.
+# Por ejemplo, el backend accede a postgres en "postgres:5432".
+# ============================================================
+networks:
+  easy-network:
+    driver: bridge

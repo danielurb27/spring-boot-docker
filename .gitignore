@@ -1,0 +1,125 @@
+# .gitignore — Archivos y carpetas que Git debe ignorar.
+#
+# ¿Por qué es importante este archivo?
+# Git rastrea cambios en archivos. Algunos archivos NO deben subirse al repositorio:
+# - Archivos con secretos (contraseñas, claves API)
+# - Archivos generados automáticamente (compilados, dependencias)
+# - Archivos específicos del entorno local (configuración del IDE)
+# Subir estos archivos puede causar problemas de seguridad o conflictos entre devs.
+
+# ============================================================
+# SECRETOS Y CONFIGURACIÓN LOCAL
+# ============================================================
+
+# Archivo con variables de entorno reales (contiene contraseñas)
+# .env.example SÍ se sube (es la plantilla sin valores reales)
+.env
+
+# ============================================================
+# JAVA / MAVEN
+# ============================================================
+
+# Directorio de clases compiladas
+target/
+
+# Archivos de clase Java compilados
+*.class
+
+# Archivos JAR, WAR, EAR (artefactos compilados)
+*.jar
+*.war
+*.ear
+*.nar
+
+# Archivos de log de Maven
+*.log
+
+# Directorio de repositorio local de Maven (dependencias descargadas)
+# Cada desarrollador tiene el suyo en ~/.m2/
+.m2/
+
+# Archivos de configuración de Maven Wrapper
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# ============================================================
+# ANGULAR / NODE.JS
+# ============================================================
+
+# Dependencias de Node.js (se instalan con npm install)
+node_modules/
+
+# Directorio de build de Angular
+dist/
+.angular/
+
+# Archivos de caché de npm
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================
+# DOCKER
+# ============================================================
+
+# Archivos de override de Docker Compose (configuración local)
+docker-compose.override.yml
+
+# ============================================================
+# IDEs Y EDITORES
+# ============================================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/
+build/
+nbbuild/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# ============================================================
+# SISTEMA OPERATIVO
+# ============================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============================================================
+# ARCHIVOS TEMPORALES Y DE CACHÉ
+# ============================================================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+.cache/

@@ -1,0 +1,22 @@
+# .dockerignore — Archivos que Docker ignora al construir la imagen del frontend.
+#
+# Similar al .gitignore pero para Docker.
+# Excluir estos archivos reduce el tamaño del contexto de build
+# y evita que Docker copie archivos innecesarios al contenedor.
+
+# Dependencias de Node (se instalan dentro del contenedor con npm install)
+node_modules/
+
+# Archivos de build anteriores
+dist/
+
+# Archivos de caché de Angular
+.angular/
+
+# Archivos de entorno del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

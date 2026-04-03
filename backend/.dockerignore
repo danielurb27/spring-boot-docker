@@ -1,0 +1,17 @@
+# .dockerignore del backend — Excluye archivos innecesarios del contexto de build.
+#
+# El contexto de build es todo lo que Docker envía al daemon para construir la imagen.
+# Excluir target/ evita enviar los .class y .jar compilados localmente,
+# ya que el Dockerfile los compila dentro del contenedor de todas formas.
+
+# Clases y JARs compilados localmente
+target/
+
+# Archivos de IDE
+.idea/
+*.iml
+.vscode/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

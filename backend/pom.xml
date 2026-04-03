@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pom.xml — Descriptor del proyecto Maven para el backend de Easy Offers.
+
+  ¿Qué es Maven?
+  Maven es una herramienta de gestión de proyectos Java. Este archivo (pom.xml)
+  describe: qué dependencias necesita el proyecto, cómo compilarlo y cómo empaquetarlo.
+  Es el equivalente a package.json en Node.js o requirements.txt en Python.
+
+  Decisión de diseño: Spring Boot 3.2.x con Java 21
+  - Spring Boot 3.x requiere Java 17 como mínimo; usamos Java 21 (LTS) para aprovechar
+    las últimas mejoras de rendimiento y los "virtual threads" (Project Loom).
+  - Spring Boot gestiona las versiones de la mayoría de dependencias automáticamente
+    a través del "parent POM", evitando conflictos de versiones.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Parent POM de Spring Boot:
+      Al heredar de spring-boot-starter-parent, obtenemos:
+      - Versiones compatibles de todas las dependencias de Spring
+      - Configuración de compilación con Java 21
+      - Plugin de Maven preconfigurado
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- Identificadores del proyecto: groupId.artifactId = com.easy.offers -->
+    <groupId>com.easy</groupId>
+    <artifactId>easy-offers</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>easy-offers</name>
+    <description>Plataforma de gestión de ofertas comerciales Easy</description>
+
+    <properties>
+        <!-- Versión de Java a usar para compilar -->
+        <java.version>21</java.version>
+        <!--
+          Versión de JJWT (Java JWT library).
+          Usamos 0.12.x que tiene una API más limpia que versiones anteriores.
+          El algoritmo HS256 (HMAC-SHA256) es el requerido por el diseño.
+        -->
+        <jjwt.version>0.12.5</jjwt.version>
+    </properties>
+
+    <dependencies>
+
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+      </dependency>
+
+
+        <!--
+          spring-boot-starter-web:
+          Incluye Spring MVC + Tomcat embebido. Nos permite crear
+          controladores REST con @RestController, @GetMapping, etc.
+          Sin esto, no tendríamos servidor HTTP.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+          spring-boot-starter-data-jpa:
+          Incluye Hibernate (implementación de JPA) + Spring Data.
+          JPA (Java Persistence API) es el estándar para mapear objetos Java
+          a tablas de base de datos. Spring Data agrega repositorios automáticos.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+          spring-boot-starter-security:
+          Incluye Spring Security para autenticación y autorización.
+          Por defecto protege todos los endpoints; nosotros lo configuraremos
+          para usar JWT stateless en lugar de sesiones.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+          spring-boot-starter-validation:
+          Incluye Bean Validation (Hibernate Validator).
+          Permite usar anotaciones como @NotNull, @Size, @Email en los DTOs
+          para validar automáticamente los datos de entrada de la API.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+          postgresql:
+          Driver JDBC para conectarse a PostgreSQL.
+          scope=runtime significa que solo se necesita en ejecución, no en compilación.
+          Spring Boot lo detecta automáticamente y configura el DataSource.
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+          JJWT (Java JWT) — tres artefactos que trabajan juntos:
+
+          jjwt-api: Interfaces y clases públicas (lo que usamos en el código).
+          jjwt-impl: Implementación interna (scope=runtime, no la importamos directamente).
+          jjwt-jackson: Serialización JSON de los claims del token usando Jackson.
+
+          Decisión: separar api/impl permite cambiar la implementación sin tocar el código
+          que usa la API. Patrón de diseño: separación de interfaz e implementación.
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+          spring-boot-starter-test:
+          Incluye JUnit 5, Mockito, AssertJ y Spring Test.
+          scope=test significa que solo se usa para ejecutar pruebas, no se empaqueta.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          spring-security-test:
+          Utilidades para testear endpoints protegidos con Spring Security
+          (por ejemplo, simular usuarios autenticados en tests).
+        -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          jqwik: librería de Property-Based Testing para Java.
+          Se integra nativamente con JUnit 5 (ya incluido en spring-boot-starter-test).
+          Permite escribir tests que verifican propiedades universales con inputs aleatorios.
+          Ver diseño técnico: Testing Strategy.
+        -->
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>1.8.4</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              spring-boot-maven-plugin:
+              Permite ejecutar `mvn spring-boot:run` y empaquetar el proyecto
+              como un "fat JAR" (JAR ejecutable que incluye todas las dependencias).
+              El Dockerfile usa `mvn package` que invoca este plugin.
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+              maven-surefire-plugin: ejecuta los tests unitarios con Maven.
+              Necesita configuración especial para que jqwik y JUnit 5 coexistan.
+
+              ¿Por qué esta configuración?
+              jqwik usa su propio TestEngine (net.jqwik.engine.JqwikTestEngine).
+              Por defecto, Surefire solo activa el engine de JUnit 5.
+              Con includeEngines, le decimos explícitamente que active AMBOS engines:
+              - junit-jupiter: para @Test, @ParameterizedTest, etc.
+              - jqwik: para @Property, @ForAll, etc.
+
+              Sin esto, los property tests (@Property) serían ignorados silenciosamente.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.execution.parallel.enabled=false
+                        </configurationParameters>
+                    </properties>
+                    <!-- Activar ambos engines de testing -->
+                    <includeEngines>junit-jupiter,jqwik</includeEngines>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
