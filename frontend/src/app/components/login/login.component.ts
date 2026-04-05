@@ -101,8 +101,28 @@ import { HttpErrorResponse } from '@angular/common/http';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+      /* Fondo con imagen — si no existe el archivo, usa el gradiente rojo como fallback */
+      background-image: url('assets/images/backgrounds/login-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-color: #c1121f; /* fallback si la imagen no carga */
+      /* Superposición oscura semitransparente para mejorar legibilidad de la card */
+      position: relative;
       padding: 16px;
+    }
+
+    /* Capa de overlay oscuro sobre la imagen de fondo */
+    .login-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    /* La card debe estar por encima del overlay */
+    .login-card {
+      position: relative;
+      z-index: 1;
     }
 
     .login-card {
@@ -111,7 +131,7 @@ import { HttpErrorResponse } from '@angular/common/http';
       padding: 40px;
       width: 100%;
       max-width: 400px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
 
     .login-header {
