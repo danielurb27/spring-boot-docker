@@ -44,7 +44,7 @@ import { AuditLog } from '../../models/user.model';
 
           <!-- Icono y tipo de evento -->
           <div class="audit-icon" [class]="'audit-icon-' + log.changeType.toLowerCase()">
-            {{ changeTypeIcon(log.changeType) }}
+            <img [src]="changeTypeIcon(log.changeType)" [alt]="log.changeType" width="16" height="16">
           </div>
 
           <div class="audit-content">
@@ -201,15 +201,15 @@ export class AuditLogComponent implements OnInit {
     });
   }
 
-  /** Retorna el emoji correspondiente al tipo de cambio */
+  /** Retorna la ruta del icono SVG correspondiente al tipo de cambio */
   changeTypeIcon(type: string): string {
     const icons: Record<string, string> = {
-      'CREATE': '✅',
-      'UPDATE': '✏️',
-      'DELETE': '🗑️',
-      'AUTO_DELETE': '🤖'
+      'CREATE': 'assets/images/icons/actions/ic-add.svg',
+      'UPDATE': 'assets/images/icons/actions/ic-edit.svg',
+      'DELETE': 'assets/images/icons/actions/ic-delete.svg',
+      'AUTO_DELETE': 'assets/images/icons/actions/ic-delete.svg'
     };
-    return icons[type] || '📝';
+    return icons[type] || 'assets/images/icons/actions/ic-edit.svg';
   }
 
   /** Retorna la etiqueta legible del tipo de cambio */

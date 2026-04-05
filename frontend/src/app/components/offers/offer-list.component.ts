@@ -36,7 +36,10 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
             {{ page.totalElements }} ofertas encontradas
           </p>
         </div>
-        <a routerLink="/offers/new" class="btn btn-primary">+ Nueva oferta</a>
+        <a routerLink="/offers/new" class="btn btn-primary">
+          <img src="assets/images/icons/actions/ic-add.svg" alt="" width="14" height="14" style="filter: brightness(0) invert(1);">
+          Nueva oferta
+        </a>
       </div>
 
       <!-- ── Panel de filtros ── -->
@@ -157,7 +160,9 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
                   <a
                     [routerLink]="['/offers', offer.id, 'edit']"
                     class="btn btn-secondary btn-sm"
+                    title="Editar oferta"
                   >
+                    <img src="assets/images/icons/actions/ic-edit.svg" alt="Editar" width="14" height="14">
                     Editar
                   </a>
                   <!-- Eliminar: solo para ADMIN -->
@@ -166,7 +171,15 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
                     class="btn btn-danger btn-sm"
                     (click)="deleteOffer(offer)"
                     [disabled]="deletingId === offer.id"
+                    title="Eliminar oferta"
                   >
+                    <img
+                      *ngIf="deletingId !== offer.id"
+                      src="assets/images/icons/actions/ic-delete.svg"
+                      alt="Eliminar"
+                      width="14" height="14"
+                      style="filter: brightness(0) invert(1);"
+                    >
                     {{ deletingId === offer.id ? '...' : 'Eliminar' }}
                   </button>
                 </div>

@@ -39,7 +39,8 @@ import { DashboardData, Offer } from '../../models/offer.model';
         </div>
         <!-- Botón para crear oferta (visible para todos) -->
         <a routerLink="/offers/new" class="btn btn-primary">
-          + Nueva oferta
+          <img src="assets/images/icons/actions/ic-add.svg" alt="" width="14" height="14" style="filter: brightness(0) invert(1);">
+          Nueva oferta
         </a>
       </div>
 
@@ -57,7 +58,10 @@ import { DashboardData, Offer } from '../../models/offer.model';
         <div class="stats-grid">
 
           <div class="stat-card stat-activa">
-            <div class="stat-icon">✅</div>
+            <!-- Icono desde assets/images/icons/dashboard/ -->
+            <div class="stat-icon">
+              <img src="assets/images/icons/dashboard/ic-activas.svg" alt="Activas" width="32" height="32">
+            </div>
             <div class="stat-info">
               <div class="stat-number">{{ data.activeCount }}</div>
               <div class="stat-label">Ofertas Activas</div>
@@ -65,7 +69,9 @@ import { DashboardData, Offer } from '../../models/offer.model';
           </div>
 
           <div class="stat-card stat-proxima">
-            <div class="stat-icon">🕐</div>
+            <div class="stat-icon">
+              <img src="assets/images/icons/dashboard/ic-proximas.svg" alt="Próximas" width="32" height="32">
+            </div>
             <div class="stat-info">
               <div class="stat-number">{{ data.upcomingCount }}</div>
               <div class="stat-label">Próximas</div>
@@ -73,7 +79,9 @@ import { DashboardData, Offer } from '../../models/offer.model';
           </div>
 
           <div class="stat-card stat-vencida">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon">
+              <img src="assets/images/icons/dashboard/ic-vencidas.svg" alt="Vencidas" width="32" height="32">
+            </div>
             <div class="stat-info">
               <div class="stat-number">{{ data.expiredCount }}</div>
               <div class="stat-label">Vencidas</div>
@@ -82,7 +90,9 @@ import { DashboardData, Offer } from '../../models/offer.model';
 
           <!-- Total calculado en el frontend -->
           <div class="stat-card stat-total">
-            <div class="stat-icon">📊</div>
+            <div class="stat-icon">
+              <img src="assets/images/icons/nav/ic-offers.svg" alt="Total" width="32" height="32">
+            </div>
             <div class="stat-info">
               <div class="stat-number">
                 {{ data.activeCount + data.upcomingCount + data.expiredCount }}

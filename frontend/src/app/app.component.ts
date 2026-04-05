@@ -27,7 +27,9 @@ import { AuthService } from './services/auth.service';
     <!-- Mostrar navbar solo si el usuario está autenticado -->
     <nav class="navbar" *ngIf="authService.isAuthenticated()">
       <div class="navbar-brand">
-        <span class="brand-icon"></span>
+        <span class="brand-icon">
+          <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="20" height="20" style="filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(700%) hue-rotate(330deg);">
+        </span>
         <span class="brand-name">Eazi Offers</span>
       </div>
 
@@ -38,6 +40,7 @@ import { AuthService } from './services/auth.service';
           Dashboard
         </a>
         <a routerLink="/offers" routerLinkActive="active" class="nav-link">
+          <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="16" height="16" class="nav-icon">
           Ofertas
         </a>
         <!-- Solo mostrar "Usuarios" si el usuario es ADMIN -->
@@ -47,6 +50,7 @@ import { AuthService } from './services/auth.service';
           routerLinkActive="active"
           class="nav-link"
         >
+          <img src="assets/images/icons/nav/ic-users.svg" alt="" width="16" height="16" class="nav-icon">
           Usuarios
         </a>
       </div>
@@ -54,6 +58,7 @@ import { AuthService } from './services/auth.service';
       <div class="navbar-user">
         <span class="user-role">{{ authService.getRole() }}</span>
         <button class="btn btn-secondary btn-sm" (click)="logout()">
+          <img src="assets/images/icons/nav/ic-logout.svg" alt="" width="14" height="14">
           Cerrar sesión
         </button>
       </div>
@@ -109,6 +114,13 @@ import { AuthService } from './services/auth.service';
     .nav-link.active {
       background-color: #fff0f0;
       color: #e63946;
+    }
+
+    /* Alinear icono con el texto del nav-link */
+    .nav-icon {
+      vertical-align: middle;
+      margin-right: 2px;
+      opacity: 0.7;
     }
 
     .navbar-user {
