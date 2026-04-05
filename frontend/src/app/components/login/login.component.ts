@@ -101,12 +101,8 @@ import { HttpErrorResponse } from '@angular/common/http';
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Fondo con imagen — si no existe el archivo, usa el gradiente rojo como fallback */
-      background-image: url('assets/images/backgrounds/login-bg.jpg');
-      background-size: cover;
-      background-position: center;
-      background-color: #c1121f; /* fallback si la imagen no carga */
-      /* Superposición oscura semitransparente para mejorar legibilidad de la card */
+      /* El fondo se define en styles.css global para que Angular pueda resolver
+         la ruta de assets correctamente durante el build con esbuild */
       position: relative;
       padding: 16px;
     }

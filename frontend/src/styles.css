@@ -263,3 +263,19 @@ body {
   margin: 0 auto;
   padding: 0 var(--spacing-lg);
 }
+
+/* ============================================================
+   Login background
+   Se define aquí (en estilos globales) porque Angular/esbuild
+   solo puede resolver rutas de assets desde styles.css global,
+   no desde estilos inline de componentes standalone.
+   ============================================================ */
+.login-container {
+  /* Imagen de fondo del login — colocar el archivo en:
+     frontend/src/assets/images/backgrounds/login-bg.jpg */
+  background-image: url('assets/images/backgrounds/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  /* Fallback: color rojo si la imagen no carga */
+  background-color: #c1121f;
+}
