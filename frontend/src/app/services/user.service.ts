@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User, CreateUserRequest, AuditLog } from '../models/user.model';
+import { User, CreateUserRequest, UpdateUserRequest, AuditLog } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 /**
@@ -30,12 +30,19 @@ export class UserService {
     return this.http.post<User>(`${this.apiUrl}/users`, request);
   }
 
-  /**
-   * Desactiva un usuario (solo ADMIN).
-   * PATCH /api/users/{id}/deactivate
-   */
+  /** Modifica los datos de un usuario (solo ADMIN). PUT /api/users/{id} */
+  updateUser(id: number, request: UpdateUserRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/users/${id}`, request);
+  }
+
+  /** Desactiva un usuario (solo ADMIN). PATCH /api/users/{id}/deactivate */
   deactivateUser(id: number): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/users/${id}/deactivate`, {});
+  }
+
+  /** Reactiva un usuario desactivado (solo ADMIN). PATCH /api/users/{id}/activate */
+  activateUser(id: number): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/users/${id}/activate`, {});
   }
 
   /**

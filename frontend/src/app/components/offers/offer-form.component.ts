@@ -135,13 +135,13 @@ import { HttpErrorResponse } from '@angular/common/http';
                 Fecha de inicio <span class="required">*</span>
               </label>
               <!--
-                type="datetime-local": input nativo para fecha y hora.
-                El valor es un string en formato "YYYY-MM-DDTHH:mm".
-                Lo convertimos al formato del backend en onSubmit().
+                type="date": input nativo para solo fecha (sin hora).
+                El usuario elige día/mes/año. La hora se fija en 00:00:00
+                al construir el request (la oferta empieza al inicio del día).
               -->
               <input
                 id="startsAt"
-                type="datetime-local"
+                type="date"
                 class="form-control"
                 [(ngModel)]="startsAtLocal"
                 name="startsAt"
@@ -153,9 +153,14 @@ import { HttpErrorResponse } from '@angular/common/http';
               <label class="form-label" for="endsAt">
                 Fecha de fin <span class="required">*</span>
               </label>
+              <!--
+                La oferta es válida hasta el final del día de endsAt.
+                Al construir el request se envía como T23:59:59,
+                así la oferta vence recién al día siguiente.
+              -->
               <input
                 id="endsAt"
-                type="datetime-local"
+                type="date"
                 class="form-control"
                 [(ngModel)]="endsAtLocal"
                 name="endsAt"
@@ -298,10 +303,10 @@ export class OfferFormComponent implements OnInit {
           offerTypeId: offer.offerTypeId,
           sectorId: offer.sectorId,
         };
-        // Convertir ISO 8601 a formato datetime-local (quitar los segundos)
-        // "2024-07-01T00:00:00" → "2024-07-01T00:00"
-        this.startsAtLocal = offer.startsAt.substring(0, 16);
-        this.endsAtLocal = offer.endsAt.substring(0, 16);
+        // Extraer solo la fecha (YYYY-MM-DD) del ISO 8601 para el input type="date"
+        // "2024-07-01T00:00:00" → "2024-07-01"
+        this.startsAtLocal = offer.startsAt.substring(0, 10);
+        this.endsAtLocal = offer.endsAt.substring(0, 10);
         this.loadingOffer = false;
       },
       error: () => {
@@ -317,22 +322,25 @@ export class OfferFormComponent implements OnInit {
     this.dateError = '';
 
     // Validación de fechas en cliente (Requerimiento 3.2)
+    // Comparamos strings YYYY-MM-DD directamente (orden lexicográfico = orden cronológico)
     if (this.startsAtLocal && this.endsAtLocal) {
-      if (new Date(this.startsAtLocal) >= new Date(this.endsAtLocal)) {
-        this.dateError = 'La fecha de inicio debe ser anterior a la fecha de fin.';
+      if (this.startsAtLocal > this.endsAtLocal) {
+        this.dateError = 'La fecha de inicio debe ser anterior o igual a la fecha de fin.';
         return;
       }
     }
 
-    // Construir el request con el formato correcto para el backend
-    // datetime-local: "2024-07-01T00:00" → backend espera: "2024-07-01T00:00:00"
+    // Construir el request con el formato correcto para el backend.
+    // startsAt: inicio del día (00:00:00) — la oferta empieza ese día.
+    // endsAt:   fin del día (23:59:59) — la oferta es válida hasta el último segundo
+    //           de ese día, y vence recién al día siguiente.
     const request: CreateOfferRequest = {
       title: this.formData.title!,
       description: this.formData.description || null,
       offerTypeId: Number(this.formData.offerTypeId),
       sectorId: Number(this.formData.sectorId),
-      startsAt: this.startsAtLocal + ':00',   // Agregar segundos
-      endsAt: this.endsAtLocal + ':00',
+      startsAt: this.startsAtLocal + 'T00:00:00',
+      endsAt: this.endsAtLocal + 'T23:59:59',
     };
 
     this.saving = true;

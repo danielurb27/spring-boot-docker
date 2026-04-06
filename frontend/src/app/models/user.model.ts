@@ -25,6 +25,13 @@ export interface CreateUserRequest {
   role: string;
 }
 
+/** Datos para modificar un usuario existente */
+export interface UpdateUserRequest {
+  fullName: string;
+  password?: string;  // Opcional: si no se envía, no se cambia
+  role: string;
+}
+
 /** Tipos de cambio posibles en la auditoría */
 export type ChangeType = 'CREATE' | 'UPDATE' | 'DELETE' | 'AUTO_DELETE';
 

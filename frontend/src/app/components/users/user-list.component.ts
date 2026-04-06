@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
-import { User, CreateUserRequest } from '../../models/user.model';
+import { User, CreateUserRequest, UpdateUserRequest } from '../../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
 /**
@@ -10,13 +10,9 @@ import { HttpErrorResponse } from '@angular/common/http';
  *
  * Funcionalidades:
  * 1. Formulario para crear nuevos usuarios (ADMIN o EMPLOYEE)
- * 2. Lista de usuarios con opción de desactivar
- *
- * Nota: el backend no tiene un endpoint GET /api/users para listar todos
- * los usuarios (no estaba en el MVP). Por eso mantenemos una lista local
- * que se actualiza al crear o desactivar usuarios en la sesión actual.
- *
- * En una versión futura se agregaría GET /api/users al backend.
+ * 2. Lista de todos los usuarios con opciones de:
+ *    - Modificar datos (nombre, contraseña, rol)
+ *    - Desactivar / Activar (toggle, sin borrar de la BD)
  *
  * Requerimiento: 2.1, 2.3
  */
@@ -40,7 +36,6 @@ import { HttpErrorResponse } from '@angular/common/http';
           Crear nuevo usuario
         </h2>
 
-        <!-- Mensajes de feedback -->
         <div class="alert alert-error" *ngIf="createError">{{ createError }}</div>
         <div class="alert alert-success" *ngIf="createSuccess">{{ createSuccess }}</div>
 
@@ -49,49 +44,25 @@ import { HttpErrorResponse } from '@angular/common/http';
 
             <div class="form-group">
               <label class="form-label">Nombre completo *</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="newUser.fullName"
-                name="fullName"
-                required
-                placeholder="Ej: Juan Pérez"
-              />
+              <input type="text" class="form-control" [(ngModel)]="newUser.fullName"
+                name="fullName" required placeholder="Ej: Juan Pérez" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Usuario *</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="newUser.username"
-                name="username"
-                required
-                placeholder="Ej: jperez"
-              />
+              <input type="text" class="form-control" [(ngModel)]="newUser.username"
+                name="username" required placeholder="Ej: jperez" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Contraseña *</label>
-              <input
-                type="password"
-                class="form-control"
-                [(ngModel)]="newUser.password"
-                name="password"
-                required
-                minlength="6"
-                placeholder="Mínimo 6 caracteres"
-              />
+              <input type="password" class="form-control" [(ngModel)]="newUser.password"
+                name="password" required minlength="6" placeholder="Mínimo 6 caracteres" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Rol *</label>
-              <select
-                class="form-control"
-                [(ngModel)]="newUser.role"
-                name="role"
-                required
-              >
+              <select class="form-control" [(ngModel)]="newUser.role" name="role" required>
                 <option value="EMPLOYEE">Empleado</option>
                 <option value="ADMIN">Administrador</option>
               </select>
@@ -100,11 +71,7 @@ import { HttpErrorResponse } from '@angular/common/http';
           </div>
 
           <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="createForm.invalid || creating"
-            >
+            <button type="submit" class="btn btn-primary" [disabled]="createForm.invalid || creating">
               <span *ngIf="creating" class="spinner"></span>
               {{ creating ? 'Creando...' : 'Crear usuario' }}
             </button>
@@ -112,10 +79,65 @@ import { HttpErrorResponse } from '@angular/common/http';
         </form>
       </div>
 
-      <!-- ── Lista de usuarios creados en esta sesión ── -->
-      <div class="card" *ngIf="createdUsers.length > 0">
+      <!-- ── Modal de edición ── -->
+      <!-- Overlay oscuro que aparece cuando editingUser no es null -->
+      <div class="modal-overlay" *ngIf="editingUser" (click)="cancelEdit()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+
+          <div class="modal-header">
+            <h2>Modificar usuario</h2>
+            <button class="modal-close" (click)="cancelEdit()">✕</button>
+          </div>
+
+          <div class="alert alert-error" *ngIf="editError">{{ editError }}</div>
+
+          <form (ngSubmit)="saveEdit()" #editForm="ngForm">
+
+            <div class="form-group">
+              <label class="form-label">Nombre completo *</label>
+              <input type="text" class="form-control" [(ngModel)]="editData.fullName"
+                name="editFullName" required />
+            </div>
+
+            <!-- El username no se puede cambiar -->
+            <div class="form-group">
+              <label class="form-label">Usuario (no editable)</label>
+              <input type="text" class="form-control" [value]="editingUser.username" disabled />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password" class="form-control" [(ngModel)]="editData.password"
+                name="editPassword" minlength="6"
+                placeholder="Dejar vacío para no cambiar" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Rol *</label>
+              <select class="form-control" [(ngModel)]="editData.role" name="editRole" required>
+                <option value="EMPLOYEE">Empleado</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || saving">
+                <span *ngIf="saving" class="spinner"></span>
+                {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Lista de usuarios ── -->
+      <div class="card" *ngIf="users.length > 0">
         <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
-          Usuarios creados en esta sesión
+          Usuarios del sistema
         </h2>
 
         <table class="table">
@@ -129,13 +151,12 @@ import { HttpErrorResponse } from '@angular/common/http';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of createdUsers">
+            <tr *ngFor="let user of users">
               <td>{{ user.fullName }}</td>
               <td>{{ user.username }}</td>
               <td>
-                <!-- Badge de rol -->
                 <span [class]="user.role === 'ADMIN' ? 'badge badge-proxima' : 'badge badge-activa'">
-                  {{ user.role === 'ADMIN' ? 'Admin' : 'Empleado' }}
+                  {{ user.role === 'ADMIN' ? 'Administrador' : 'Empleado' }}
                 </span>
               </td>
               <td>
@@ -144,25 +165,41 @@ import { HttpErrorResponse } from '@angular/common/http';
                 </span>
               </td>
               <td>
-                <button
-                  *ngIf="user.isActive"
-                  class="btn btn-danger btn-sm"
-                  (click)="deactivateUser(user)"
-                  [disabled]="deactivatingId === user.id"
-                >
-                  {{ deactivatingId === user.id ? '...' : 'Desactivar' }}
-                </button>
-                <span *ngIf="!user.isActive" style="color: #6c757d; font-size: 13px;">
-                  Desactivado
-                </span>
+                <div class="action-buttons">
+
+                  <!-- Botón Modificar (siempre visible) -->
+                  <button class="btn btn-secondary btn-sm" (click)="startEdit(user)">
+                    <img src="assets/images/icons/actions/ic-edit.svg" alt="" width="13" height="13">
+                    Modificar
+                  </button>
+
+                  <!-- Botón Desactivar / Activar (toggle según estado) -->
+                  <button
+                    *ngIf="user.isActive"
+                    class="btn btn-danger btn-sm"
+                    (click)="deactivateUser(user)"
+                    [disabled]="togglingId === user.id"
+                  >
+                    {{ togglingId === user.id ? '...' : 'Desactivar' }}
+                  </button>
+
+                  <button
+                    *ngIf="!user.isActive"
+                    class="btn btn-success btn-sm"
+                    (click)="activateUser(user)"
+                    [disabled]="togglingId === user.id"
+                  >
+                    {{ togglingId === user.id ? '...' : 'Activar' }}
+                  </button>
+
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Estado vacío -->
-      <div class="card" *ngIf="createdUsers.length === 0">
+      <div class="card" *ngIf="users.length === 0 && !loading">
         <p style="text-align: center; color: #6c757d; padding: 20px;">
           Usa el formulario de arriba para crear usuarios del sistema.
         </p>
@@ -180,40 +217,100 @@ import { HttpErrorResponse } from '@angular/common/http';
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
     }
-
     .form-row .form-group { margin-bottom: 0; }
+
+    .action-buttons { display: flex; gap: 6px; }
+
+    /* Botón verde para activar */
+    .btn-success {
+      background-color: #2d6a4f;
+      color: white;
+      border: none;
+    }
+    .btn-success:hover:not(:disabled) { background-color: #1b4332; }
+
+    /* ── Modal de edición ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 10px;
+      padding: 28px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 { font-size: 18px; font-weight: 600; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #6c757d;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .modal-close:hover { background: #f8f9fa; }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid #dee2e6;
+    }
   `]
 })
 export class UserListComponent implements OnInit {
 
-  /** Usuarios creados en esta sesión (lista local) */
-  createdUsers: User[] = [];
+  users: User[] = [];
+  loading = false;
 
-  /** Datos del formulario de creación */
-  newUser: CreateUserRequest = {
-    fullName: '',
-    username: '',
-    password: '',
-    role: 'EMPLOYEE'   // Rol por defecto: empleado
-  };
-
+  /** Formulario de creación */
+  newUser: CreateUserRequest = { fullName: '', username: '', password: '', role: 'EMPLOYEE' };
   creating = false;
-  deactivatingId: number | null = null;
   createError = '';
   createSuccess = '';
+
+  /** Modal de edición — null cuando está cerrado */
+  editingUser: User | null = null;
+  editData: UpdateUserRequest = { fullName: '', password: '', role: 'EMPLOYEE' };
+  saving = false;
+  editError = '';
+
+  /** ID del usuario cuyo estado se está cambiando (para deshabilitar el botón) */
+  togglingId: number | null = null;
 
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
-    // Cargar todos los usuarios existentes desde el backend
     this.loadUsers();
   }
 
-  /** Carga todos los usuarios del sistema */
   loadUsers(): void {
+    this.loading = true;
     this.userService.getAllUsers().subscribe({
-      next: (users) => this.createdUsers = users,
-      error: () => {} // silencioso si falla
+      next: (users) => { this.users = users; this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 
@@ -225,49 +322,85 @@ export class UserListComponent implements OnInit {
 
     this.userService.createUser(this.newUser).subscribe({
       next: (user) => {
-        // Recargar la lista completa para mostrar el nuevo usuario
-        this.loadUsers();
+        this.users = [...this.users, user];
         this.createSuccess = `Usuario "${user.username}" creado exitosamente.`;
         this.creating = false;
-
-        // Limpiar el formulario
         this.newUser = { fullName: '', username: '', password: '', role: 'EMPLOYEE' };
-
-        // Limpiar el mensaje de éxito después de 3 segundos
         setTimeout(() => this.createSuccess = '', 3000);
       },
       error: (err: HttpErrorResponse) => {
         this.creating = false;
-        if (err.status === 409) {
-          this.createError = `El usuario "${this.newUser.username}" ya existe.`;
-        } else {
-          this.createError = err.error?.message || 'Error al crear el usuario.';
-        }
+        this.createError = err.status === 409
+          ? `El usuario "${this.newUser.username}" ya existe.`
+          : err.error?.message || 'Error al crear el usuario.';
       }
     });
   }
 
-  /** Desactiva un usuario */
-  deactivateUser(user: User): void {
-    if (!confirm(`¿Desactivar al usuario "${user.username}"? No podrá iniciar sesión.`)) {
-      return;
-    }
+  /** Abre el modal de edición con los datos actuales del usuario */
+  startEdit(user: User): void {
+    this.editingUser = user;
+    this.editData = { fullName: user.fullName, password: '', role: user.role };
+    this.editError = '';
+  }
 
-    this.deactivatingId = user.id;
+  cancelEdit(): void {
+    this.editingUser = null;
+    this.editError = '';
+  }
 
-    this.userService.deactivateUser(user.id).subscribe({
+  /** Guarda los cambios del modal de edición */
+  saveEdit(): void {
+    if (!this.editingUser) return;
+    this.editError = '';
+    this.saving = true;
+
+    // Si la contraseña está vacía, no la enviamos al backend
+    const request: UpdateUserRequest = {
+      fullName: this.editData.fullName,
+      role: this.editData.role,
+      ...(this.editData.password ? { password: this.editData.password } : {})
+    };
+
+    this.userService.updateUser(this.editingUser.id, request).subscribe({
       next: (updated) => {
         // Actualizar el usuario en la lista local
-        const index = this.createdUsers.findIndex(u => u.id === user.id);
-        if (index !== -1) {
-          this.createdUsers[index] = updated;
-        }
-        this.deactivatingId = null;
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
+        this.saving = false;
+        this.editingUser = null;
       },
-      error: () => {
-        this.deactivatingId = null;
-        alert('Error al desactivar el usuario.');
+      error: (err: HttpErrorResponse) => {
+        this.saving = false;
+        this.editError = err.error?.message || 'Error al guardar los cambios.';
       }
+    });
+  }
+
+  /** Desactiva un usuario (soft delete — no borra de la BD) */
+  deactivateUser(user: User): void {
+    if (!confirm(`¿Desactivar al usuario "${user.username}"? No podrá iniciar sesión.`)) return;
+
+    this.togglingId = user.id;
+    this.userService.deactivateUser(user.id).subscribe({
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
+        this.togglingId = null;
+      },
+      error: () => { this.togglingId = null; }
+    });
+  }
+
+  /** Reactiva un usuario previamente desactivado */
+  activateUser(user: User): void {
+    if (!confirm(`¿Activar al usuario "${user.username}"? Podrá volver a iniciar sesión.`)) return;
+
+    this.togglingId = user.id;
+    this.userService.activateUser(user.id).subscribe({
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
+        this.togglingId = null;
+      },
+      error: () => { this.togglingId = null; }
     });
   }
 }

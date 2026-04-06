@@ -140,6 +140,55 @@ public class UserService {
     }
 
     /**
+     * Actualiza los datos de un usuario existente.
+     * El username no se puede cambiar. La contraseña solo se actualiza si se provee.
+     *
+     * @param userId  ID del usuario a modificar
+     * @param fullName Nuevo nombre completo
+     * @param rawPassword Nueva contraseña en texto plano (null o vacío = no cambiar)
+     * @param roleStr Nuevo rol ("ADMIN" o "EMPLOYEE")
+     * @return El usuario actualizado como entidad de dominio
+     */
+    public User updateUser(Long userId, String fullName, String rawPassword, String roleStr) {
+        UserJpaEntity entity = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
+
+        // Validar rol
+        UserRole role;
+        try {
+            role = UserRole.valueOf(roleStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRoleException(roleStr);
+        }
+
+        entity.setFullName(fullName);
+        entity.setRole(role);
+
+        // Solo actualizar contraseña si se proveyó una nueva
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            entity.setPasswordHash(passwordEncoder.encode(rawPassword));
+        }
+
+        entity.setUpdatedAt(Instant.now());
+        return userMapper.toDomain(userRepository.save(entity));
+    }
+
+    /**
+     * Reactiva un usuario previamente desactivado.
+     *
+     * @param userId ID del usuario a activar
+     * @return El usuario actualizado como entidad de dominio
+     */
+    public User activateUser(Long userId) {
+        UserJpaEntity entity = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
+
+        entity.setActive(true);
+        entity.setUpdatedAt(Instant.now());
+        return userMapper.toDomain(userRepository.save(entity));
+    }
+
+    /**
      * Obtiene todos los usuarios del sistema.
      * Usado por el endpoint GET /api/users para listar usuarios en el frontend.
      */

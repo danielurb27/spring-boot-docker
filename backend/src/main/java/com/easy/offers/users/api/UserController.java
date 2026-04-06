@@ -56,6 +56,28 @@ public class UserController {
     }
 
     /**
+     * PUT /api/users/{id} — Modificar datos de un usuario.
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest request) {
+        User user = userService.updateUser(id, request.fullName(), request.password(), request.role());
+        return ResponseEntity.ok(UserResponse.from(user));
+    }
+
+    /**
+     * PATCH /api/users/{id}/activate — Reactivar un usuario desactivado.
+     */
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> activateUser(@PathVariable Long id) {
+        User user = userService.activateUser(id);
+        return ResponseEntity.ok(UserResponse.from(user));
+    }
+
+    /**
      * PATCH /api/users/{id}/deactivate — Desactivar un usuario (soft delete).
      * Requerimiento: 2.3
      */
