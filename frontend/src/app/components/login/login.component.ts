@@ -36,7 +36,7 @@ import { HttpErrorResponse } from '@angular/common/http';
         <div class="login-header">
           <!-- Logo blanco de Easy sobre el fondo oscuro -->
           <img src="assets/images/logos/logo-easy-white.png" alt="Easy" class="login-logo">
-          <h1>Eazi Offers</h1>
+          <h1>Eazi</h1>
           <p>Gestión de Ofertas</p>
         </div>
 

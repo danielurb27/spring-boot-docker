@@ -23,7 +23,7 @@ import { AuthService } from './services/auth.service';
       <!-- Brand: logo de Easy + nombre de la app -->
       <div class="navbar-brand">
         <img src="assets/images/logos/logo-easy.png" alt="Easy" class="brand-logo">
-        <span class="brand-name">Eazi Offers</span>
+        <span class="brand-name"></span>
       </div>
 
       <!-- Links de navegación -->
