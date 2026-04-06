@@ -34,8 +34,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 
         <!-- Logo y título -->
         <div class="login-header">
-          <div class="logo">🏪</div>
-          <h1>Eazi</h1>
+          <!-- Logo blanco de Easy sobre el fondo oscuro -->
+          <img src="assets/images/logos/logo-easy-white.png" alt="Easy" class="login-logo">
+          <h1>Eazi Offers</h1>
           <p>Gestión de Ofertas</p>
         </div>
 
@@ -122,8 +123,12 @@ import { HttpErrorResponse } from '@angular/common/http';
     }
 
     .login-card {
-      background: white;
-      border-radius: 12px;
+      /* Fondo semitransparente con efecto blur (glassmorphism) */
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 16px;
       padding: 40px;
       width: 100%;
       max-width: 400px;
@@ -135,21 +140,50 @@ import { HttpErrorResponse } from '@angular/common/http';
       margin-bottom: 32px;
     }
 
-    .logo {
-      font-size: 48px;
-      margin-bottom: 8px;
+    /* Logo blanco de Easy */
+    .login-logo {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 12px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .login-header h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      color: #212529;
+      /* Texto blanco para contrastar con el fondo oscuro/imagen */
+      color: #ffffff;
       margin-bottom: 4px;
     }
 
     .login-header p {
-      color: #6c757d;
+      color: rgba(255, 255, 255, 0.75);
       font-size: 14px;
+    }
+
+    /* Labels y texto del formulario en blanco */
+    :host ::ng-deep .form-label {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Inputs con fondo semitransparente */
+    :host ::ng-deep .form-control {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+    }
+
+    :host ::ng-deep .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    :host ::ng-deep .form-control:focus {
+      background: rgba(255, 255, 255, 0.28);
+      border-color: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
     }
 
     .btn-full {
