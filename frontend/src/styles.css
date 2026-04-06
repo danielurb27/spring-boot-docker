@@ -279,3 +279,216 @@ body {
   /* Fallback: color rojo si la imagen no carga */
   background-color: #c1121f;
 }
+
+/* ============================================================
+   Dark Mode
+   Se activa agregando la clase 'dark' al <body>.
+   El AppComponent lo gestiona via Renderer2 + localStorage.
+   ============================================================ */
+
+/* Variables de color en modo oscuro */
+body.dark {
+  --color-bg:      #0f1117;
+  --color-surface: #1a1d27;
+  --color-border:  #2e3347;
+  --color-text:    #e2e8f0;
+  --color-text-muted: #8892a4;
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ── Navbar ── */
+body.dark .navbar {
+  background: #1a1d27;
+  border-bottom-color: #2e3347;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+body.dark .nav-link {
+  color: #c9d1e0;
+}
+
+body.dark .nav-link:hover {
+  background-color: #252836;
+}
+
+body.dark .nav-link.active {
+  background-color: rgba(230, 57, 70, 0.15);
+  color: #ff6b6b;
+}
+
+body.dark .user-role {
+  background: #252836;
+  color: #8892a4;
+}
+
+body.dark .btn-theme-toggle {
+  border-color: #2e3347;
+  color: #e2e8f0;
+}
+
+body.dark .btn-theme-toggle:hover {
+  background: #252836;
+}
+
+/* ── Botones ── */
+body.dark .btn-secondary {
+  color: #c9d1e0;
+  border-color: #2e3347;
+  background: transparent;
+}
+
+body.dark .btn-secondary:hover:not(:disabled) {
+  background: #252836;
+}
+
+/* ── Cards ── */
+body.dark .card {
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ── Formularios ── */
+body.dark .form-control {
+  background: #252836;
+  border-color: #2e3347;
+  color: #e2e8f0;
+}
+
+body.dark .form-control:focus {
+  border-color: #e63946;
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+}
+
+body.dark .form-control::placeholder {
+  color: #4a5568;
+}
+
+body.dark .form-label {
+  color: #c9d1e0;
+}
+
+body.dark select.form-control option {
+  background: #1a1d27;
+  color: #e2e8f0;
+}
+
+/* ── Tabla ── */
+body.dark .table th {
+  background-color: #252836;
+  color: #8892a4;
+}
+
+body.dark .table th,
+body.dark .table td {
+  border-bottom-color: #2e3347;
+}
+
+body.dark .table tr:hover td {
+  background-color: #252836;
+}
+
+/* ── Alertas ── */
+body.dark .alert-error {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #ff8a8a;
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+body.dark .alert-success {
+  background-color: rgba(45, 106, 79, 0.2);
+  color: #6fcf97;
+  border-color: rgba(45, 106, 79, 0.3);
+}
+
+/* ── Badges ── */
+body.dark .badge-activa {
+  background-color: rgba(45, 106, 79, 0.25);
+  color: #6fcf97;
+}
+
+body.dark .badge-proxima {
+  background-color: rgba(29, 53, 87, 0.4);
+  color: #90caf9;
+}
+
+body.dark .badge-vencida {
+  background-color: rgba(108, 117, 125, 0.2);
+  color: #8892a4;
+}
+
+/* ── Stat cards del dashboard ── */
+body.dark .stat-card {
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+body.dark .stat-number {
+  color: #e2e8f0;
+}
+
+/* ── Offer items en el dashboard ── */
+body.dark .offer-item {
+  background: #252836;
+}
+
+/* ── Barra de progreso ── */
+body.dark .progress-bar-container {
+  background-color: #2e3347;
+}
+
+/* ── Modal de edición de usuarios ── */
+body.dark .modal-card {
+  background: #1a1d27;
+  border: 1px solid #2e3347;
+}
+
+body.dark .modal-header h2 {
+  color: #e2e8f0;
+}
+
+body.dark .modal-close {
+  color: #8892a4;
+}
+
+body.dark .modal-close:hover {
+  background: #252836;
+}
+
+body.dark .modal-actions {
+  border-top-color: #2e3347;
+}
+
+/* ── Spinner ── */
+body.dark .spinner {
+  border-color: #2e3347;
+  border-top-color: #e63946;
+}
+
+/* ── Textos secundarios ── */
+body.dark .page-subtitle,
+body.dark .offer-dates,
+body.dark .offer-desc,
+body.dark .empty-state,
+body.dark .page-info {
+  color: #8892a4;
+}
+
+body.dark .page-title,
+body.dark .offer-title {
+  color: #e2e8f0;
+}
+
+/* ── Links ── */
+body.dark .link-more {
+  color: #ff6b6b;
+}
+
+body.dark .breadcrumb-link {
+  color: #8892a4;
+}
+
+body.dark .breadcrumb-link:hover {
+  color: #ff6b6b;
+}

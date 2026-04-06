@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from './services/auth.service';
@@ -6,6 +6,11 @@ import { AuthService } from './services/auth.service';
 /**
  * AppComponent — Componente raíz de la aplicación.
  * Contiene el layout principal: navbar + contenido de la ruta activa.
+ *
+ * Dark Mode:
+ * Al hacer clic en el botón de tema, se agrega/quita la clase 'dark' en el <body>.
+ * Los estilos dark mode están definidos en styles.css bajo el selector body.dark.
+ * La preferencia se persiste en localStorage para que sobreviva recargas.
  */
 @Component({
   selector: 'app-root',
@@ -18,7 +23,7 @@ import { AuthService } from './services/auth.service';
       <!-- Brand: logo de Easy + nombre de la app -->
       <div class="navbar-brand">
         <img src="assets/images/logos/logo-easy.png" alt="Easy" class="brand-logo">
-        <span class="brand-name">Eazi</span>
+        <span class="brand-name">Eazi Offers</span>
       </div>
 
       <!-- Links de navegación -->
@@ -31,7 +36,6 @@ import { AuthService } from './services/auth.service';
           <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="16" height="16" class="nav-icon">
           Ofertas
         </a>
-        <!-- Solo visible para ADMIN -->
         <a
           *ngIf="authService.isAdmin()"
           routerLink="/users"
@@ -43,9 +47,23 @@ import { AuthService } from './services/auth.service';
         </a>
       </div>
 
-      <!-- Usuario actual + cerrar sesión -->
+      <!-- Controles de usuario -->
       <div class="navbar-user">
         <span class="user-role">{{ roleLabel() }}</span>
+
+        <!-- Botón toggle Dark Mode / Light Mode -->
+        <button
+          class="btn-theme-toggle"
+          (click)="toggleDarkMode()"
+          [title]="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          [attr.aria-label]="isDark ? 'Modo claro' : 'Modo oscuro'"
+        >
+          <!-- Sol = modo claro activo (clic para ir a oscuro) -->
+          <span *ngIf="!isDark" class="theme-icon">🌙</span>
+          <!-- Luna = modo oscuro activo (clic para ir a claro) -->
+          <span *ngIf="isDark" class="theme-icon">☀️</span>
+        </button>
+
         <button class="btn btn-secondary btn-sm" (click)="logout()">
           <img src="assets/images/icons/nav/ic-logout.svg" alt="" width="14" height="14">
           Cerrar sesión
@@ -54,7 +72,7 @@ import { AuthService } from './services/auth.service';
 
     </nav>
 
-    <!-- Contenido principal: renderiza el componente de la ruta activa -->
+    <!-- Contenido principal -->
     <main [class.with-navbar]="authService.isAuthenticated()">
       <router-outlet></router-outlet>
     </main>
@@ -72,6 +90,7 @@ import { AuthService } from './services/auth.service';
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: background 0.2s, border-color 0.2s;
     }
 
     .navbar-brand {
@@ -84,7 +103,6 @@ import { AuthService } from './services/auth.service';
       text-decoration: none;
     }
 
-    /* Logo de Easy en el navbar */
     .brand-logo {
       height: 32px;
       width: auto;
@@ -116,7 +134,6 @@ import { AuthService } from './services/auth.service';
       color: #e63946;
     }
 
-    /* Icono dentro del nav-link */
     .nav-icon {
       opacity: 0.7;
       flex-shrink: 0;
@@ -125,7 +142,7 @@ import { AuthService } from './services/auth.service';
     .navbar-user {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .user-role {
@@ -137,6 +154,30 @@ import { AuthService } from './services/auth.service';
       color: #6c757d;
     }
 
+    /* Botón de toggle de tema — sin borde, solo el icono */
+    .btn-theme-toggle {
+      background: none;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      padding: 0;
+    }
+
+    .btn-theme-toggle:hover {
+      background: #f8f9fa;
+    }
+
+    .theme-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
     main.with-navbar {
       padding: 24px;
       max-width: 1200px;
@@ -144,15 +185,42 @@ import { AuthService } from './services/auth.service';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  constructor(public authService: AuthService) {}
+  /** true cuando el modo oscuro está activo */
+  isDark = false;
+
+  constructor(
+    public authService: AuthService,
+    private renderer: Renderer2
+  ) {}
+
+  ngOnInit(): void {
+    // Restaurar preferencia guardada en localStorage al iniciar la app
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+      this.isDark = true;
+      this.renderer.addClass(document.body, 'dark');
+    }
+  }
+
+  /** Alterna entre modo claro y oscuro */
+  toggleDarkMode(): void {
+    this.isDark = !this.isDark;
+
+    if (this.isDark) {
+      this.renderer.addClass(document.body, 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      this.renderer.removeClass(document.body, 'dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }
 
   logout(): void {
     this.authService.logout();
   }
 
-  /** Convierte el rol técnico a etiqueta legible en español */
   roleLabel(): string {
     const role = this.authService.getRole();
     if (role === 'ADMIN') return 'Administrador';
