@@ -5,45 +5,33 @@ import { AuthService } from './services/auth.service';
 
 /**
  * AppComponent — Componente raíz de la aplicación.
- *
- * Es el componente que se renderiza en <app-root> del index.html.
  * Contiene el layout principal: navbar + contenido de la ruta activa.
- *
- * <router-outlet>: el "slot" donde Angular renderiza el componente
- * de la ruta activa. Cuando el usuario navega a /dashboard,
- * Angular renderiza DashboardComponent dentro de <router-outlet>.
- *
- * RouterLink: directiva para navegación sin recargar la página.
- * Equivalente a <a href="..."> pero usando el Router de Angular.
- *
- * RouterLinkActive: agrega una clase CSS cuando la ruta está activa.
- * Útil para resaltar el ítem del menú de la página actual.
  */
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <!-- Mostrar navbar solo si el usuario está autenticado -->
+    <!-- Navbar: visible solo cuando el usuario está autenticado -->
     <nav class="navbar" *ngIf="authService.isAuthenticated()">
+
+      <!-- Brand: logo de Easy + nombre de la app -->
       <div class="navbar-brand">
-        <span class="brand-icon">
-          <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="20" height="20" style="filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(700%) hue-rotate(330deg);">
-        </span>
-        <span class="brand-name">Eazi Offers</span>
+        <img src="assets/images/logos/logo-easy.png" alt="Easy" class="brand-logo">
+        <span class="brand-name">Eazi</span>
       </div>
 
+      <!-- Links de navegación -->
       <div class="navbar-links">
-        <!-- routerLink: navega a la ruta sin recargar la página -->
-        <!-- routerLinkActive: agrega la clase 'active' cuando la ruta está activa -->
         <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+          <img src="assets/images/icons/nav/ic-dashboard.svg" alt="" width="16" height="16" class="nav-icon">
           Dashboard
         </a>
         <a routerLink="/offers" routerLinkActive="active" class="nav-link">
           <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="16" height="16" class="nav-icon">
           Ofertas
         </a>
-        <!-- Solo mostrar "Usuarios" si el usuario es ADMIN -->
+        <!-- Solo visible para ADMIN -->
         <a
           *ngIf="authService.isAdmin()"
           routerLink="/users"
@@ -55,16 +43,18 @@ import { AuthService } from './services/auth.service';
         </a>
       </div>
 
+      <!-- Usuario actual + cerrar sesión -->
       <div class="navbar-user">
-        <span class="user-role">{{ authService.getRole() }}</span>
+        <span class="user-role">{{ roleLabel() }}</span>
         <button class="btn btn-secondary btn-sm" (click)="logout()">
           <img src="assets/images/icons/nav/ic-logout.svg" alt="" width="14" height="14">
           Cerrar sesión
         </button>
       </div>
+
     </nav>
 
-    <!-- Contenido principal: aquí se renderiza el componente de la ruta activa -->
+    <!-- Contenido principal: renderiza el componente de la ruta activa -->
     <main [class.with-navbar]="authService.isAuthenticated()">
       <router-outlet></router-outlet>
     </main>
@@ -91,9 +81,15 @@ import { AuthService } from './services/auth.service';
       font-weight: 700;
       font-size: 16px;
       color: #e63946;
+      text-decoration: none;
     }
 
-    .brand-icon { font-size: 20px; }
+    /* Logo de Easy en el navbar */
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
 
     .navbar-links {
       display: flex;
@@ -101,6 +97,9 @@ import { AuthService } from './services/auth.service';
     }
 
     .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 6px 14px;
       border-radius: 6px;
       text-decoration: none;
@@ -111,16 +110,16 @@ import { AuthService } from './services/auth.service';
     }
 
     .nav-link:hover { background-color: #f8f9fa; }
+
     .nav-link.active {
       background-color: #fff0f0;
       color: #e63946;
     }
 
-    /* Alinear icono con el texto del nav-link */
+    /* Icono dentro del nav-link */
     .nav-icon {
-      vertical-align: middle;
-      margin-right: 2px;
       opacity: 0.7;
+      flex-shrink: 0;
     }
 
     .navbar-user {
@@ -132,7 +131,7 @@ import { AuthService } from './services/auth.service';
     .user-role {
       font-size: 12px;
       font-weight: 600;
-      padding: 2px 8px;
+      padding: 2px 10px;
       background: #f8f9fa;
       border-radius: 12px;
       color: #6c757d;
@@ -146,10 +145,18 @@ import { AuthService } from './services/auth.service';
   `]
 })
 export class AppComponent {
-  // Inyectamos AuthService como público para usarlo en el template
+
   constructor(public authService: AuthService) {}
 
   logout(): void {
     this.authService.logout();
+  }
+
+  /** Convierte el rol técnico a etiqueta legible en español */
+  roleLabel(): string {
+    const role = this.authService.getRole();
+    if (role === 'ADMIN') return 'Administrador';
+    if (role === 'EMPLOYEE') return 'Empleado';
+    return role ?? '';
   }
 }
