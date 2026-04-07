@@ -211,6 +211,22 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
                 {{ statusLabel(offer.status) }}
               </span>
             </div>
+            <!-- Descripción en tarjeta móvil -->
+            <div class="offer-card-desc" *ngIf="offer.description">
+              <span *ngIf="!expandedDescriptions.has(offer.id)">
+                {{ offer.description | slice:0:80 }}
+                <button *ngIf="offer.description!.length > 80"
+                  class="desc-toggle" (click)="toggleDescription(offer.id)">
+                  Ver más ▾
+                </button>
+              </span>
+              <span *ngIf="expandedDescriptions.has(offer.id)">
+                {{ offer.description }}
+                <button class="desc-toggle" (click)="toggleDescription(offer.id)">
+                  Ver menos ▴
+                </button>
+              </span>
+            </div>
             <div class="offer-card-dates">
               <span>Inicio: {{ formatDate(offer.startsAt) }}</span>
               <span>Fin: {{ formatDate(offer.endsAt) }}</span>
@@ -300,6 +316,14 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
     .offer-title-cell {
       display: block;
       font-weight: 500;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    /* Limitar el ancho de la primera columna (título) */
+    .table td:first-child {
+      max-width: 300px;
+      min-width: 160px;
     }
 
     .offer-desc {
@@ -309,6 +333,8 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
       margin-top: 2px;
       max-width: 280px;
       line-height: 1.4;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .desc-toggle {
@@ -401,6 +427,7 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
         border: 1px solid var(--color-border, #dee2e6);
         border-radius: 8px;
         padding: 14px;
+        overflow: hidden;
       }
 
       .offer-card-header {
@@ -409,6 +436,15 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
         align-items: flex-start;
         gap: 8px;
         margin-bottom: 8px;
+        min-width: 0;
+      }
+
+      /* Asegurar que el título no desborde la tarjeta */
+      .offer-card-header .offer-title-cell {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        min-width: 0;
+        flex: 1;
       }
 
       .offer-card-dates {
@@ -418,6 +454,15 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
         font-size: 12px;
         color: var(--color-text-muted, #6c757d);
         margin-bottom: 10px;
+      }
+
+      .offer-card-desc {
+        font-size: 12px;
+        color: var(--color-text-muted, #6c757d);
+        margin-bottom: 8px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        line-height: 1.4;
       }
 
       .offer-card-actions {
