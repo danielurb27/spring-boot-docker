@@ -140,63 +140,86 @@ import { HttpErrorResponse } from '@angular/common/http';
           Usuarios del sistema
         </h2>
 
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Usuario</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of users">
-              <td>{{ user.fullName }}</td>
-              <td>{{ user.username }}</td>
-              <td>
+        <!-- Tabla (desktop + tablet con scroll) -->
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td>{{ user.fullName }}</td>
+                <td>{{ user.username }}</td>
+                <td>
+                  <span [class]="user.role === 'ADMIN' ? 'badge badge-proxima' : 'badge badge-activa'">
+                    {{ user.role === 'ADMIN' ? 'Administrador' : 'Empleado' }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="user.isActive ? 'badge badge-activa' : 'badge badge-vencida'">
+                    {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-secondary btn-sm" (click)="startEdit(user)">
+                      <img src="assets/images/icons/actions/ic-edit.svg" alt="" width="13" height="13">
+                      Modificar
+                    </button>
+                    <button *ngIf="user.isActive" class="btn btn-danger btn-sm"
+                      (click)="deactivateUser(user)" [disabled]="togglingId === user.id">
+                      {{ togglingId === user.id ? '...' : 'Desactivar' }}
+                    </button>
+                    <button *ngIf="!user.isActive" class="btn btn-success btn-sm"
+                      (click)="activateUser(user)" [disabled]="togglingId === user.id">
+                      {{ togglingId === user.id ? '...' : 'Activar' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tarjetas (solo móvil <480px) -->
+        <div class="user-cards">
+          <div class="user-card" *ngFor="let user of users">
+            <div class="user-card-header">
+              <div class="user-card-info">
+                <span class="user-card-name">{{ user.fullName }}</span>
+                <span class="user-card-username">&#64;{{ user.username }}</span>
+              </div>
+              <div class="user-card-badges">
                 <span [class]="user.role === 'ADMIN' ? 'badge badge-proxima' : 'badge badge-activa'">
-                  {{ user.role === 'ADMIN' ? 'Administrador' : 'Empleado' }}
+                  {{ user.role === 'ADMIN' ? 'Admin' : 'Empleado' }}
                 </span>
-              </td>
-              <td>
                 <span [class]="user.isActive ? 'badge badge-activa' : 'badge badge-vencida'">
                   {{ user.isActive ? 'Activo' : 'Inactivo' }}
                 </span>
-              </td>
-              <td>
-                <div class="action-buttons">
-
-                  <!-- Botón Modificar (siempre visible) -->
-                  <button class="btn btn-secondary btn-sm" (click)="startEdit(user)">
-                    <img src="assets/images/icons/actions/ic-edit.svg" alt="" width="13" height="13">
-                    Modificar
-                  </button>
-
-                  <!-- Botón Desactivar / Activar (toggle según estado) -->
-                  <button
-                    *ngIf="user.isActive"
-                    class="btn btn-danger btn-sm"
-                    (click)="deactivateUser(user)"
-                    [disabled]="togglingId === user.id"
-                  >
-                    {{ togglingId === user.id ? '...' : 'Desactivar' }}
-                  </button>
-
-                  <button
-                    *ngIf="!user.isActive"
-                    class="btn btn-success btn-sm"
-                    (click)="activateUser(user)"
-                    [disabled]="togglingId === user.id"
-                  >
-                    {{ togglingId === user.id ? '...' : 'Activar' }}
-                  </button>
-
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+            <div class="user-card-actions">
+              <button class="btn btn-secondary btn-sm" (click)="startEdit(user)">
+                <img src="assets/images/icons/actions/ic-edit.svg" alt="" width="13" height="13">
+                Modificar
+              </button>
+              <button *ngIf="user.isActive" class="btn btn-danger btn-sm"
+                (click)="deactivateUser(user)" [disabled]="togglingId === user.id">
+                {{ togglingId === user.id ? '...' : 'Desactivar' }}
+              </button>
+              <button *ngIf="!user.isActive" class="btn btn-success btn-sm"
+                (click)="activateUser(user)" [disabled]="togglingId === user.id">
+                {{ togglingId === user.id ? '...' : 'Activar' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="card" *ngIf="users.length === 0 && !loading">
@@ -214,12 +237,21 @@ import { HttpErrorResponse } from '@angular/common/http';
 
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
     .form-row .form-group { margin-bottom: 0; }
 
-    .action-buttons { display: flex; gap: 6px; }
+    .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* Scroll horizontal en tablet */
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Tarjetas de usuario: ocultas en desktop/tablet */
+    .user-cards { display: none; }
 
     /* Botón verde para activar */
     .btn-success {
@@ -286,12 +318,73 @@ import { HttpErrorResponse } from '@angular/common/http';
     }
 
     @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      /* Ocultar tabla, mostrar tarjetas */
+      .table-wrapper { display: none; }
+      .user-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .user-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius);
+        padding: 12px 14px;
+      }
+
+      .user-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .user-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .user-card-name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .user-card-username {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .user-card-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+      }
+
+      .user-card-actions {
+        display: flex;
+        gap: 8px;
+      }
+
       .modal-card {
         max-height: 90vh;
         overflow-y: auto;
       }
-      .form-row {
-        grid-template-columns: 1fr;
+
+      .modal-actions {
+        flex-direction: column;
+      }
+
+      .modal-actions .btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   `]

@@ -28,11 +28,32 @@ describe('UserListComponent — Responsive Design', () => {
 
   // ── Estructura del template ─────────────────────────────────────────────
 
-  it('el template contiene .modal-overlay para el modal de edición', () => {
-    // Feature: responsive-design, Requerimiento 6
-    // El overlay existe en el DOM (oculto por *ngIf cuando editingUser es null)
-    // Verificamos que el componente tiene la propiedad editingUser
-    expect(component.editingUser).toBeNull();
+  it('el template contiene .table-wrapper para scroll horizontal en tablet', () => {
+    // Feature: responsive-design, Requerimiento 4.3 aplicado a usuarios
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.table-wrapper')).toBeTruthy();
+  });
+
+  it('el template contiene .user-cards para la vista de tarjetas en móvil', () => {
+    // Feature: responsive-design, vista de tarjetas en móvil
+    component.users = [{
+      id: 1, fullName: 'Juan', username: 'jperez', role: 'EMPLOYEE', isActive: true, createdAt: '2024-01-01T00:00:00Z'
+    }];
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.user-cards')).toBeTruthy();
+  });
+
+  it('cada .user-card contiene nombre, badges y acciones', () => {
+    component.users = [{
+      id: 1, fullName: 'Juan Pérez', username: 'jperez', role: 'EMPLOYEE', isActive: true, createdAt: '2024-01-01T00:00:00Z'
+    }];
+    fixture.detectChanges();
+    const card = fixture.nativeElement.querySelector('.user-card') as HTMLElement;
+    expect(card).toBeTruthy();
+    expect(card.querySelector('.user-card-name')).toBeTruthy();
+    expect(card.querySelector('.badge')).toBeTruthy();
+    expect(card.querySelector('.user-card-actions')).toBeTruthy();
   });
 
   it('el template contiene .form-row para el formulario de creación', () => {

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, adminGuard } from './guards/auth.guard';
+import { authGuard, adminGuard, guestGuard } from './guards/auth.guard';
 
 /**
  * app.routes.ts — Definición de rutas de la aplicación.
@@ -25,9 +25,10 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
-  // Login: ruta pública (sin guard)
+  // Login: ruta pública — redirige al dashboard si ya está autenticado
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./components/login/login.component').then(m => m.LoginComponent)
   },

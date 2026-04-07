@@ -35,7 +35,21 @@ export const authGuard: CanActivateFn = () => {
 };
 
 /**
- * adminGuard — Guard que protege rutas exclusivas de ADMIN.
+ * guestGuard — Guard para rutas públicas como /login.
+ *
+ * Si el usuario ya está autenticado y navega a /login,
+ * lo redirige al dashboard en lugar de mostrar el formulario de login.
+ */
+export const guestGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAuthenticated()) {
+    return router.createUrlTree(['/dashboard']);
+  }
+
+  return true;
+};
  *
  * Verifica dos condiciones:
  * 1. El usuario está autenticado (tiene token válido)
