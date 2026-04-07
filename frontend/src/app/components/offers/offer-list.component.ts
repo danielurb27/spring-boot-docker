@@ -50,7 +50,7 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
           <div class="form-group">
             <label class="form-label">Estado</label>
             <select class="form-control" [(ngModel)]="filters.status" (change)="applyFilters()">
-              <option [value]="undefined">Todos</option>
+              <option value="">Todos</option>
               <option value="ACTIVA">Activa</option>
               <option value="PROXIMA">Próxima</option>
               <option value="VENCIDA">Vencida</option>
@@ -469,6 +469,11 @@ export class OfferListComponent implements OnInit {
   /** Aplica los filtros y vuelve a la primera página */
   applyFilters(): void {
     this.filters.page = 0;
+    // Limpiar status si no es un valor válido (undefined, null, string vacío, "undefined")
+    const validStatuses: OfferStatus[] = ['ACTIVA', 'PROXIMA', 'VENCIDA'];
+    if (!validStatuses.includes(this.filters.status as OfferStatus)) {
+      this.filters.status = undefined;
+    }
     this.loadOffers();
   }
 
