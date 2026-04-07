@@ -49,7 +49,7 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
           <!-- Filtro por estado -->
           <div class="form-group">
             <label class="form-label">Estado</label>
-            <select class="form-control" [(ngModel)]="filters.status" (change)="applyFilters()">
+            <select class="form-control" [(ngModel)]="statusFilter" (change)="onStatusChange()">
               <option value="">Todos</option>
               <option value="ACTIVA">Activa</option>
               <option value="PROXIMA">Próxima</option>
@@ -425,6 +425,9 @@ export class OfferListComponent implements OnInit {
     size: 20
   };
 
+  /** Valor del select de estado — usa '' para "Todos" y se convierte a undefined al filtrar */
+  statusFilter = '';
+
   constructor(
     private offerService: OfferService,
     public authService: AuthService,
@@ -436,6 +439,7 @@ export class OfferListComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['status']) {
         this.filters.status = params['status'] as OfferStatus;
+        this.statusFilter = params['status'];
       }
       this.loadOffers();
     });
@@ -469,7 +473,7 @@ export class OfferListComponent implements OnInit {
   /** Aplica los filtros y vuelve a la primera página */
   applyFilters(): void {
     this.filters.page = 0;
-    // Limpiar status si no es un valor válido (undefined, null, string vacío, "undefined")
+    // Normalizar status: string vacío o valores inválidos → undefined para el backend
     const validStatuses: OfferStatus[] = ['ACTIVA', 'PROXIMA', 'VENCIDA'];
     if (!validStatuses.includes(this.filters.status as OfferStatus)) {
       this.filters.status = undefined;
@@ -477,9 +481,16 @@ export class OfferListComponent implements OnInit {
     this.loadOffers();
   }
 
+  /** Maneja el cambio del select de estado */
+  onStatusChange(): void {
+    this.filters.status = this.statusFilter as OfferStatus || undefined;
+    this.applyFilters();
+  }
+
   /** Limpia todos los filtros */
   clearFilters(): void {
     this.filters = { page: 0, size: 20 };
+    this.statusFilter = '';
     this.loadOffers();
   }
 
