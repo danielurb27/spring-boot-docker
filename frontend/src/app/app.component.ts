@@ -256,6 +256,14 @@ import { AuthService } from './services/auth.service';
         border-radius: 0;
       }
     }
+
+    /* Dark mode: menú desplegado en móvil */
+    @media (max-width: 768px) {
+      :host-context(body.dark) .navbar-links {
+        background: #1a1d27;
+        border-bottom-color: #2e3347;
+      }
+    }
   `]
 })
 export class AppComponent implements OnInit {
