@@ -50,7 +50,7 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
           <div class="form-group">
             <label class="form-label">Estado</label>
             <select class="form-control" [(ngModel)]="filters.status" (change)="applyFilters()">
-              <option value="">Todos</option>
+              <option [value]="undefined">Todos</option>
               <option value="ACTIVA">Activa</option>
               <option value="PROXIMA">Próxima</option>
               <option value="VENCIDA">Vencida</option>
