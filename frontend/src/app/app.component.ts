@@ -72,8 +72,11 @@ import { AuthService } from './services/auth.service';
           [title]="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
           [attr.aria-label]="isDark ? 'Modo claro' : 'Modo oscuro'"
         >
-          <span *ngIf="!isDark" class="theme-icon">🌙</span>
-          <span *ngIf="isDark" class="theme-icon">☀️</span>
+          <img
+            [src]="isDark ? 'assets/images/icons/actions/ic-white.svg' : 'assets/images/icons/actions/ic-dark.svg'"
+            [alt]="isDark ? 'Modo claro' : 'Modo oscuro'"
+            width="18" height="18"
+          >
         </button>
 
         <button class="btn btn-secondary btn-sm" (click)="logout()">
