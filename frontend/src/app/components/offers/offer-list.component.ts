@@ -125,8 +125,10 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
               <tr *ngFor="let offer of offers">
                 <td>
                   <span class="offer-title-cell">{{ offer.title }}</span>
-                  <span class="offer-desc" *ngIf="offer.description">
-                    {{ offer.description | slice:0:60 }}{{ offer.description!.length > 60 ? '...' : '' }}
+                  <span class="offer-desc" *ngIf="offer.description"
+                    [title]="offer.description"
+                    [class.offer-desc--expandable]="offer.description!.length > 60">
+                    {{ offer.description | slice:0:80 }}{{ offer.description!.length > 80 ? '...' : '' }}
                   </span>
                 </td>
                 <td>
@@ -295,6 +297,16 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
       font-size: 12px;
       color: #6c757d;
       margin-top: 2px;
+      max-width: 280px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .offer-desc--expandable {
+      cursor: help;
+      text-decoration: underline dotted;
+      text-underline-offset: 2px;
     }
 
     .action-buttons {

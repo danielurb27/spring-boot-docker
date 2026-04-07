@@ -127,6 +127,8 @@ import { AuthService } from './services/auth.service';
     .navbar-links {
       display: flex;
       gap: 4px;
+      flex: 1;
+      justify-content: center;
     }
 
     .nav-link {
