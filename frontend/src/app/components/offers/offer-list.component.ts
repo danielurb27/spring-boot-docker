@@ -125,10 +125,20 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
               <tr *ngFor="let offer of offers">
                 <td>
                   <span class="offer-title-cell">{{ offer.title }}</span>
-                  <span class="offer-desc" *ngIf="offer.description"
-                    [title]="offer.description"
-                    [class.offer-desc--expandable]="offer.description!.length > 60">
-                    {{ offer.description | slice:0:80 }}{{ offer.description!.length > 80 ? '...' : '' }}
+                  <span class="offer-desc" *ngIf="offer.description">
+                    <span *ngIf="!expandedDescriptions.has(offer.id)">
+                      {{ offer.description | slice:0:80 }}
+                      <button *ngIf="offer.description!.length > 80"
+                        class="desc-toggle" (click)="toggleDescription(offer.id)">
+                        Ver más ▾
+                      </button>
+                    </span>
+                    <span *ngIf="expandedDescriptions.has(offer.id)">
+                      {{ offer.description }}
+                      <button class="desc-toggle" (click)="toggleDescription(offer.id)">
+                        Ver menos ▴
+                      </button>
+                    </span>
                   </span>
                 </td>
                 <td>
@@ -298,15 +308,22 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
       color: #6c757d;
       margin-top: 2px;
       max-width: 280px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.4;
     }
 
-    .offer-desc--expandable {
-      cursor: help;
-      text-decoration: underline dotted;
-      text-underline-offset: 2px;
+    .desc-toggle {
+      background: none;
+      border: none;
+      padding: 0 2px;
+      font-size: 11px;
+      color: var(--color-primary);
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .desc-toggle:hover {
+      text-decoration: underline;
     }
 
     .action-buttons {
@@ -430,6 +447,18 @@ export class OfferListComponent implements OnInit {
   sectors: Sector[] = [];
   loading = true;
   deletingId: number | null = null;
+
+  /** IDs de ofertas con descripción expandida */
+  expandedDescriptions = new Set<number>();
+
+  /** Alterna la expansión de la descripción de una oferta */
+  toggleDescription(id: number): void {
+    if (this.expandedDescriptions.has(id)) {
+      this.expandedDescriptions.delete(id);
+    } else {
+      this.expandedDescriptions.add(id);
+    }
+  }
 
   /** Filtros actuales — se sincronizan con los selects del template */
   filters: OfferFilters = {
