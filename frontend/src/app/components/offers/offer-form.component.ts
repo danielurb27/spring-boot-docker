@@ -220,8 +220,17 @@ import { HttpErrorResponse } from '@angular/common/http';
       gap: 16px;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 480px) {
       .form-row { grid-template-columns: 1fr; }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     .required { color: #e63946; }

@@ -204,11 +204,26 @@ import { DashboardData, Offer } from '../../models/offer.model';
     }
 
     /* Grid de tarjetas de estadísticas */
+    /* Desktop: 4 columnas */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 24px;
+    }
+
+    /* Tablet: 2x2 */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Móvil: 1 columna */
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .stat-card {
@@ -251,6 +266,13 @@ import { DashboardData, Offer } from '../../models/offer.model';
 
     @media (max-width: 768px) {
       .offers-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .offers-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
     }
 
     .card-header {

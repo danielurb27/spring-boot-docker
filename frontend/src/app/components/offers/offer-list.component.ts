@@ -109,84 +109,116 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
         </div>
 
         <!-- Tabla -->
-        <table class="table" *ngIf="offers.length > 0">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Estado</th>
-              <th>Progreso</th>
-              <th>Inicio</th>
-              <th>Fin</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let offer of offers">
-              <td>
-                <span class="offer-title-cell">{{ offer.title }}</span>
-                <span class="offer-desc" *ngIf="offer.description">
-                  {{ offer.description | slice:0:60 }}{{ offer.description!.length > 60 ? '...' : '' }}
-                </span>
-              </td>
-              <td>
-                <!-- Badge de estado con clase dinámica según el valor -->
-                <span [class]="'badge badge-' + offer.status.toLowerCase()">
-                  {{ statusLabel(offer.status) }}
-                </span>
-              </td>
-              <td class="progress-cell">
-                <!--
-                  Barra de progreso de la oferta.
-                  Muestra qué porcentaje del período de vigencia ya transcurrió.
-                  - PROXIMA: 0% (aún no empezó)
-                  - ACTIVA: (ahora - inicio) / (fin - inicio) * 100
-                  - VENCIDA: 100% (ya terminó)
-                  El color cambia según el estado para dar contexto visual.
-                -->
-                <div class="progress-bar-container" [title]="progressLabel(offer)">
-                  <div
-                    class="progress-bar-fill"
-                    [class]="'progress-fill-' + offer.status.toLowerCase()"
-                    [style.width.%]="calculateProgress(offer)"
-                  ></div>
-                </div>
-                <span class="progress-text">{{ calculateProgress(offer) }}%</span>
-              </td>
-              <td>{{ formatDate(offer.startsAt) }}</td>
-              <td>{{ formatDate(offer.endsAt) }}</td>
-              <td>
-                <div class="action-buttons">
-                  <!-- Editar: disponible para todos -->
-                  <a
-                    [routerLink]="['/offers', offer.id, 'edit']"
-                    class="btn btn-secondary btn-sm"
-                    title="Editar oferta"
-                  >
-                    <img src="assets/images/icons/actions/ic-edit.svg" alt="Editar" width="14" height="14">
-                    Editar
-                  </a>
-                  <!-- Eliminar: solo para ADMIN -->
-                  <button
-                    *ngIf="authService.isAdmin()"
-                    class="btn btn-danger btn-sm"
-                    (click)="deleteOffer(offer)"
-                    [disabled]="deletingId === offer.id"
-                    title="Eliminar oferta"
-                  >
-                    <img
-                      *ngIf="deletingId !== offer.id"
-                      src="assets/images/icons/actions/ic-delete.svg"
-                      alt="Eliminar"
-                      width="14" height="14"
-                      style="filter: brightness(0) invert(1);"
+        <div class="table-wrapper">
+          <table class="table" *ngIf="offers.length > 0">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Estado</th>
+                <th>Progreso</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let offer of offers">
+                <td>
+                  <span class="offer-title-cell">{{ offer.title }}</span>
+                  <span class="offer-desc" *ngIf="offer.description">
+                    {{ offer.description | slice:0:60 }}{{ offer.description!.length > 60 ? '...' : '' }}
+                  </span>
+                </td>
+                <td>
+                  <!-- Badge de estado con clase dinámica según el valor -->
+                  <span [class]="'badge badge-' + offer.status.toLowerCase()">
+                    {{ statusLabel(offer.status) }}
+                  </span>
+                </td>
+                <td class="progress-cell">
+                  <!--
+                    Barra de progreso de la oferta.
+                    Muestra qué porcentaje del período de vigencia ya transcurrió.
+                    - PROXIMA: 0% (aún no empezó)
+                    - ACTIVA: (ahora - inicio) / (fin - inicio) * 100
+                    - VENCIDA: 100% (ya terminó)
+                    El color cambia según el estado para dar contexto visual.
+                  -->
+                  <div class="progress-bar-container" [title]="progressLabel(offer)">
+                    <div
+                      class="progress-bar-fill"
+                      [class]="'progress-fill-' + offer.status.toLowerCase()"
+                      [style.width.%]="calculateProgress(offer)"
+                    ></div>
+                  </div>
+                  <span class="progress-text">{{ calculateProgress(offer) }}%</span>
+                </td>
+                <td>{{ formatDate(offer.startsAt) }}</td>
+                <td>{{ formatDate(offer.endsAt) }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <!-- Editar: disponible para todos -->
+                    <a
+                      [routerLink]="['/offers', offer.id, 'edit']"
+                      class="btn btn-secondary btn-sm"
+                      title="Editar oferta"
                     >
-                    {{ deletingId === offer.id ? '...' : 'Eliminar' }}
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                      <img src="assets/images/icons/actions/ic-edit.svg" alt="Editar" width="14" height="14">
+                      Editar
+                    </a>
+                    <!-- Eliminar: solo para ADMIN -->
+                    <button
+                      *ngIf="authService.isAdmin()"
+                      class="btn btn-danger btn-sm"
+                      (click)="deleteOffer(offer)"
+                      [disabled]="deletingId === offer.id"
+                      title="Eliminar oferta"
+                    >
+                      <img
+                        *ngIf="deletingId !== offer.id"
+                        src="assets/images/icons/actions/ic-delete.svg"
+                        alt="Eliminar"
+                        width="14" height="14"
+                        style="filter: brightness(0) invert(1);"
+                      >
+                      {{ deletingId === offer.id ? '...' : 'Eliminar' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tarjetas para móvil (< 480px) — alternativa a la tabla -->
+        <div class="offer-cards" *ngIf="offers.length > 0">
+          <div class="offer-card" *ngFor="let offer of offers">
+            <div class="offer-card-header">
+              <span class="offer-title-cell">{{ offer.title }}</span>
+              <span [class]="'badge badge-' + offer.status.toLowerCase()">
+                {{ statusLabel(offer.status) }}
+              </span>
+            </div>
+            <div class="offer-card-dates">
+              <span>Inicio: {{ formatDate(offer.startsAt) }}</span>
+              <span>Fin: {{ formatDate(offer.endsAt) }}</span>
+            </div>
+            <div class="offer-card-actions">
+              <a [routerLink]="['/offers', offer.id, 'edit']" class="btn btn-secondary btn-sm">
+                <img src="assets/images/icons/actions/ic-edit.svg" alt="Editar" width="13" height="13">
+                Editar
+              </a>
+              <button
+                *ngIf="authService.isAdmin()"
+                class="btn btn-danger btn-sm"
+                (click)="deleteOffer(offer)"
+                [disabled]="deletingId === offer.id"
+              >
+                {{ deletingId === offer.id ? '...' : 'Eliminar' }}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- ── Paginación ── -->
         <div class="pagination" *ngIf="page && page.totalPages > 1">
@@ -314,6 +346,67 @@ import { Offer, OfferFilters, OfferStatus, OfferType, Sector, PageResponse } fro
       font-size: 11px;
       color: #6c757d;
       font-weight: 500;
+    }
+
+    /* Scroll horizontal en tablet */
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Tarjetas: ocultas por defecto (desktop y tablet usan la tabla) */
+    .offer-cards { display: none; }
+
+    /* Móvil: ocultar tabla, mostrar tarjetas */
+    @media (max-width: 480px) {
+      .table-wrapper { display: none; }
+
+      .offer-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .offer-card {
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--color-border, #dee2e6);
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      .offer-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .offer-card-dates {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 12px;
+        color: var(--color-text-muted, #6c757d);
+        margin-bottom: 10px;
+      }
+
+      .offer-card-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Filtros en 1 columna en móvil */
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* Page header apilado en móvil */
+      .page-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
     }
   `]
 })

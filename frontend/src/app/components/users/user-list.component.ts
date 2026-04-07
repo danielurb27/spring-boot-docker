@@ -278,6 +278,22 @@ import { HttpErrorResponse } from '@angular/common/http';
       padding-top: 16px;
       border-top: 1px solid #dee2e6;
     }
+
+    @media (max-width: 768px) {
+      .modal-card {
+        max-width: calc(100% - 32px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-card {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
   `]
 })
 export class UserListComponent implements OnInit {

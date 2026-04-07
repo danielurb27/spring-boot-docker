@@ -11,6 +11,10 @@ import { AuthService } from './services/auth.service';
  * Al hacer clic en el botón de tema, se agrega/quita la clase 'dark' en el <body>.
  * Los estilos dark mode están definidos en styles.css bajo el selector body.dark.
  * La preferencia se persiste en localStorage para que sobreviva recargas.
+ *
+ * Responsive / Hamburger Menu:
+ * En móvil/tablet (≤768px) se muestra el botón hamburguesa que colapsa/expande
+ * el menú de navegación. El estado se controla con menuOpen.
  */
 @Component({
   selector: 'app-root',
@@ -26,13 +30,22 @@ import { AuthService } from './services/auth.service';
         <span class="brand-name"></span>
       </div>
 
+      <!-- Botón hamburguesa (visible solo en móvil/tablet) -->
+      <button
+        class="hamburger-btn"
+        (click)="toggleMenu()"
+        [attr.aria-label]="menuOpen ? 'Cerrar menú' : 'Abrir menú'"
+      >
+        {{ menuOpen ? '✕' : '☰' }}
+      </button>
+
       <!-- Links de navegación -->
-      <div class="navbar-links">
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+      <div class="navbar-links" [class.open]="menuOpen">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
           <img src="assets/images/icons/nav/ic-dashboard.svg" alt="" width="16" height="16" class="nav-icon">
           Dashboard
         </a>
-        <a routerLink="/offers" routerLinkActive="active" class="nav-link">
+        <a routerLink="/offers" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
           <img src="assets/images/icons/nav/ic-offers.svg" alt="" width="16" height="16" class="nav-icon">
           Ofertas
         </a>
@@ -41,6 +54,7 @@ import { AuthService } from './services/auth.service';
           routerLink="/users"
           routerLinkActive="active"
           class="nav-link"
+          (click)="closeMenu()"
         >
           <img src="assets/images/icons/nav/ic-users.svg" alt="" width="16" height="16" class="nav-icon">
           Usuarios
@@ -58,9 +72,7 @@ import { AuthService } from './services/auth.service';
           [title]="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
           [attr.aria-label]="isDark ? 'Modo claro' : 'Modo oscuro'"
         >
-          <!-- Sol = modo claro activo (clic para ir a oscuro) -->
           <span *ngIf="!isDark" class="theme-icon">🌙</span>
-          <!-- Luna = modo oscuro activo (clic para ir a claro) -->
           <span *ngIf="isDark" class="theme-icon">☀️</span>
         </button>
 
@@ -154,7 +166,6 @@ import { AuthService } from './services/auth.service';
       color: #6c757d;
     }
 
-    /* Botón de toggle de tema — sin borde, solo el icono */
     .btn-theme-toggle {
       background: none;
       border: 1px solid #dee2e6;
@@ -183,6 +194,50 @@ import { AuthService } from './services/auth.service';
       max-width: 1200px;
       margin: 0 auto;
     }
+
+    /* Botón hamburguesa: oculto en desktop */
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--color-border, #dee2e6);
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 10px;
+      color: inherit;
+      line-height: 1;
+    }
+
+    /* Tablet y móvil: mostrar hamburguesa, colapsar links */
+    @media (max-width: 768px) {
+      .hamburger-btn { display: flex; align-items: center; }
+
+      .navbar { position: relative; flex-wrap: wrap; }
+
+      .navbar-links {
+        display: none;
+        position: absolute;
+        top: 56px;
+        left: 0;
+        right: 0;
+        background: white;
+        border-bottom: 1px solid #dee2e6;
+        flex-direction: column;
+        padding: 8px 0;
+        z-index: 99;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .navbar-links.open {
+        display: flex;
+      }
+
+      .nav-link {
+        width: 100%;
+        padding: 12px 24px;
+        border-radius: 0;
+      }
+    }
   `]
 })
 export class AppComponent implements OnInit {
@@ -190,13 +245,15 @@ export class AppComponent implements OnInit {
   /** true cuando el modo oscuro está activo */
   isDark = false;
 
+  /** true cuando el menú hamburguesa está abierto */
+  menuOpen = false;
+
   constructor(
     public authService: AuthService,
     private renderer: Renderer2
   ) {}
 
   ngOnInit(): void {
-    // Restaurar preferencia guardada en localStorage al iniciar la app
     const saved = localStorage.getItem('theme');
     if (saved === 'dark') {
       this.isDark = true;
@@ -215,6 +272,16 @@ export class AppComponent implements OnInit {
       this.renderer.removeClass(document.body, 'dark');
       localStorage.setItem('theme', 'light');
     }
+  }
+
+  /** Abre/cierra el menú hamburguesa */
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  /** Cierra el menú hamburguesa */
+  closeMenu(): void {
+    this.menuOpen = false;
   }
 
   logout(): void {

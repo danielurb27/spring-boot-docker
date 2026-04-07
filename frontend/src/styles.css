@@ -48,6 +48,10 @@
   /* Sombras */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
   --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+
+  /* Breakpoints */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
 }
 
 /* ============================================================
@@ -491,4 +495,22 @@ body.dark .breadcrumb-link {
 
 body.dark .breadcrumb-link:hover {
   color: #ff6b6b;
+}
+
+/* Padding reducido del contenido principal en tablet y móvil */
+@media (max-width: 768px) {
+  main.with-navbar {
+    padding: 16px;
+  }
+}
+@media (max-width: 480px) {
+  main.with-navbar {
+    padding: 12px;
+  }
+}
+
+/* Dark mode: soporte para el menú desplegado del navbar */
+body.dark .navbar-links-dropdown {
+  background: #1a1d27;
+  border-bottom-color: #2e3347;
 }
