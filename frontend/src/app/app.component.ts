@@ -78,7 +78,7 @@ import { AuthService } from './services/auth.service';
 
         <button class="btn btn-secondary btn-sm" (click)="logout()">
           <img src="assets/images/icons/nav/ic-logout.svg" alt="" width="14" height="14">
-          Cerrar sesión
+          <span class="btn-logout-text">Cerrar sesión</span>
         </button>
       </div>
 
@@ -212,7 +212,25 @@ import { AuthService } from './services/auth.service';
     @media (max-width: 768px) {
       .hamburger-btn { display: flex; align-items: center; }
 
-      .navbar { position: relative; flex-wrap: wrap; }
+      /* Navbar en una sola fila: brand | [user-controls + hamburger] */
+      .navbar {
+        position: relative;
+        height: auto;
+        min-height: 56px;
+        padding: 0 16px;
+        flex-wrap: nowrap;
+      }
+
+      /* Ocultar el label de rol en móvil para ahorrar espacio */
+      .user-role { display: none; }
+
+      /* Compactar el botón de logout: solo ícono, sin texto */
+      .navbar-user .btn-logout-text { display: none; }
+
+      .navbar-user {
+        gap: 6px;
+        flex-shrink: 0;
+      }
 
       .navbar-links {
         display: none;
