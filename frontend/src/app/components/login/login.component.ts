@@ -46,14 +46,11 @@ import { HttpErrorResponse } from '@angular/common/http';
         </div>
 
         <!-- Formulario de login -->
-        <!-- (ngSubmit): ejecuta onSubmit() cuando se envía el formulario -->
-        <!-- #loginForm="ngForm": referencia al formulario para validación -->
-        <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <!-- autocomplete="off": evita que el navegador sugiera usuarios guardados -->
+        <form (ngSubmit)="onSubmit()" #loginForm="ngForm" autocomplete="off">
 
           <div class="form-group">
             <label class="form-label" for="username">Usuario</label>
-            <!-- [(ngModel)]: two-way binding — sincroniza el input con la propiedad username -->
-            <!-- required: validación HTML5 + Angular -->
             <input
               id="username"
               type="text"
@@ -61,6 +58,7 @@ import { HttpErrorResponse } from '@angular/common/http';
               [(ngModel)]="username"
               name="username"
               required
+              autocomplete="off"
               placeholder="Ingrese su usuario"
               [disabled]="loading"
             />
@@ -75,6 +73,7 @@ import { HttpErrorResponse } from '@angular/common/http';
               [(ngModel)]="password"
               name="password"
               required
+              autocomplete="new-password"
               placeholder="Ingrese su contraseña"
               [disabled]="loading"
             />
